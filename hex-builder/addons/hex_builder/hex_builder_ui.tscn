@@ -1,0 +1,19 @@
+[gd_scene format=3 uid="uid://cdtce5jrgfynw"]
+
+[ext_resource type="Script" uid="uid://brhqxsybxdlob" path="res://addons/hex_builder/HexBuilderUi.cs" id="1_m4e8m"]
+
+[node name="HexBuilderUi" type="Control" unique_id=476009712 node_paths=PackedStringArray("testButton")]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_m4e8m")
+testButton = NodePath("Button")
+
+[node name="Button" type="Button" parent="." unique_id=1008749424]
+layout_mode = 1
+offset_right = 98.0
+offset_bottom = 31.0
+text = "Test button"
