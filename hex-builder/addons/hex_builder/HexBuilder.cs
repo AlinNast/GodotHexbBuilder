@@ -10,31 +10,37 @@ public partial class HexBuilder : EditorPlugin
 	// public Callable InitToolButton => Callable.From(Init);
 
 	/// <summary>
-	/// toggles to the inspector allowing to paint hexes in the scene view. 
+	/// Toggles to the inspector allowing to paint hexes in the scene view. 
 	/// </summary>
 	[Export]
 	public bool toolActive = true;
 
 	[Export]
-	public string tileFolderPath = "tiles/demo/"; // deffault parth to the folder with hexes to paint with
-	// TODO make the tiles packed scenes
+	public PackedScene tileScene; // Packed scene of the hex tile to paint with
 
-	public Vector2I gridSize = new Vector2I(10, 10); // the size of the initial grid
+	public int gridLength = 5;
+	public int gridHeight = 5;
 	// TODO make this customazible
 
-	//// this was used to store the state of the tiles
-	// private bool[,] primaryBlockGrid;
-	// private Node3D[,] meshGrid;
-
-	// Dictionary<string, string> fileReference = new Dictionary<string, string>();
-	// Maps tile key names (e.g., "0", "1", "3") to their full file paths (e.g., "res://tiles/demo/tile_1.glb"). It gets filled dynamically when DirContents() scans your folder.
-
+	
 	/// ////// Private variables for the tool's internal state
+	
+	/// <summary>
+	/// The unit of one hex
+	/// </summary>
+	int hex_size = 1; // Size of the hexagon tiles
 	
 	/// <summary>
 	/// Ensures that Process doesent run before initialization
 	/// </summary>
 	bool init = false;
+
+    /// <summary>
+	/// Stores the Hexes as value and they are accessible by their grid position as key. 
+	/// </summary>
+	private Dictionary<Vector3I, Node3D> hexGrid = new Dictionary<Vector3I, Node3D>();
+
+	private Node3D mapContainer; // Node3D that will hold all the hex tiles in the scene
 
 	/// <summary>
 	/// Track where the mouse is hovering in the grid
@@ -86,33 +92,22 @@ public partial class HexBuilder : EditorPlugin
 			return;
 		}
 
-		for (int x = 0; x < gridSize.X; x++)
-		{
-			for (int y = 0; y < gridSize.Y; y++)
-			{
-				GD.Print("draw 3d is disabled");
-
-			}
-		}
-		//DebugDraw3D.DrawSphere(new Vector3(pointerGridPos.X, 0, pointerGridPos.Z), 0.04f, Colors.Yellow, 0.1f);
+		//ConstructDebugGrid();
+		
+		DebugDraw3D.DrawSphere(new Vector3(pointerGridPos.X, 0, pointerGridPos.Z), 0.04f, Colors.Yellow, 0.1f);
 	}
 
 	public void Init()
 	{
 		GD.Print("Hex tool Plugin initialized");
-		//fileReference.Clear();
 		SetCurrentScene();
+
+		// To be replaced with a dynamic loading of the hex tile scenes from the specified folder path
+		tileScene = GD.Load<PackedScene>("res://tiles/demo/hex_tile_base.tscn");
 		//DirContents(tileFolderPath);
-		//primaryBlockGrid = new bool[gridSize.X, gridSize.Y];
-		//meshGrid = new Node3D[gridSize.X - 1, gridSize.Y - 1];
-		// for (int y = 0; y < gridSize.Y - 1; y++)
-		// {
-		// 	for (int x = 0; x < gridSize.X - 1; x++)
-		// 	{
-		// 		primaryBlockGrid[x, y] = false;
-		// 		SetTileMesh("0", x, y, 0);
-		// 	}
-		// }
+
+		ConstructGrid();
+		
 		init = true;
 		toolActive = true;
 	}
@@ -122,35 +117,6 @@ public partial class HexBuilder : EditorPlugin
 		activeRoot = EditorInterface.Singleton.GetEditedSceneRoot();
 	}
 
-	public void CommitTiles()
-	{
-		// Loop all tileInstance.Owner = activeRoot;
-		// Move all tile instances to current active root as well.
-	}
-
-	public void DiscardTiles()
-	{
-	}
-
-	// public void SetTileMesh(string tile, int x, int y, int rotation)
-	// {
-	// 	if (meshGrid[x, y] != null)
-	// 	{
-	// 		meshGrid[x, y].QueueFree();
-	// 		meshGrid[x, y] = null;
-	// 	}
-
-	// 	string resourcePath = fileReference[tile];
-	// 	var asset = GD.Load<PackedScene>(resourcePath);
-	// 	var tileInstance = (Node3D)asset.Instantiate();
-	// 	activeRoot.AddChild(tileInstance);
-	// 	tileInstance.Owner = activeRoot;
-	// 	tileInstance.GlobalPosition = new Vector3(x + 0.5f, 0, y + 0.5f);
-	// 	tileInstance.Scale = Vector3.One;
-	// 	tileInstance.RotateY(Mathf.DegToRad(rotation));
-	// 	meshGrid[x, y] = tileInstance;
-	// 	tileInstance.Name = $"tile_x{x}y{y}";
-	// }
 
 	public override int _Forward3DGuiInput(Camera3D camera, InputEvent @event)
 	{
@@ -170,11 +136,11 @@ public partial class HexBuilder : EditorPlugin
 			(mouse.ButtonIndex == MouseButton.Left || mouse.ButtonIndex == MouseButton.Right))
 		{
 			Vector2I gridPoint = RayToGridPoint(camera, mouse.Position);
-			if (CheckIfValidPrimaryGrid(gridPoint))
-			{
-				SetBlockState(gridPoint, mouse.ButtonIndex == MouseButton.Left);
-				pointerGridPos = new Vector3(gridPoint.X, 0, gridPoint.Y);
-			}
+			// if (CheckIfValidPrimaryGrid(gridPoint))
+			// {
+			// 	SetBlockState(gridPoint, mouse.ButtonIndex == MouseButton.Left);
+			// 	pointerGridPos = new Vector3(gridPoint.X, 0, gridPoint.Y);
+			// }
 
 			return (int)EditorPlugin.AfterGuiInput.Stop;
 		}
@@ -261,14 +227,154 @@ public partial class HexBuilder : EditorPlugin
 		}
 	}
 
-	private bool CheckIfValidPrimaryGrid(Vector2I gridPos)
+	 /// ////////////////////////////////////  UI COM FUNCTIONS  //////////////////////////////////////
+	public void SetGridSize(int length, int height)
 	{
-		return gridPos.X >= 0 && gridPos.X < gridSize.X && gridPos.Y >= 0 && gridPos.Y < gridSize.Y;
+		gridLength = length;
+		gridHeight = height;
 	}
 
-	private bool CheckIfValidDualGrid(Vector2I gridPos)
+	public void StopTool()
 	{
-		return gridPos.X >= 0 && gridPos.X < gridSize.X - 1 && gridPos.Y >= 0 && gridPos.Y < gridSize.Y - 1;
+		ClearGrid();
+		toolActive = false;
+		init = false;
 	}
+
+
+
+            /////////////////////////////////  UTILITY FUNCTIONS  //////////////////////////////////////
+	
+
+
+	private void ConstructDebugGrid()
+	{
+		// Unit dimensions of the grid
+		float unitL = Mathf.Sqrt(3) * hex_size; // Width of a hexagon
+		float unitH = 2 * hex_size; // Height of a hexagon
+		float unitVSpacing = 1.5f * hex_size; // Vertical spacing between hexagon centers
+
+		float L = gridLength * unitL;
+    	float H = (gridHeight > 1) ? ((gridHeight - 1) * unitVSpacing + unitH) : unitH;
+		// Radius / Half-dimensions
+		float halfL = L / 2.0f;
+		float halfH = H / 2.0f;
+
+		float sideZ = halfH - hex_size; // Z-coordinate for the side vertices of the hexagon
+
+		if (L <= H)
+		{
+			// --- POINTED-TOP HEXAGON ---
+			// Side vertices sit at Z = +/- (H / 4) to ensure equal side lengths when L == H
+			
+
+			Vector3 topPoint         = new Vector3(0,       0,  halfH);
+			Vector3 topRightPoint    = new Vector3(halfL,   0,  sideZ);
+			Vector3 bottomRightPoint = new Vector3(halfL,   0, -sideZ);
+			Vector3 bottomPoint      = new Vector3(0,       0, -halfH);
+			Vector3 bottomLeftPoint  = new Vector3(-halfL,  0, -sideZ);
+			Vector3 topLeftPoint     = new Vector3(-halfL,  0,  sideZ);
+
+			DebugDraw3D.DrawLine(topPoint, topRightPoint, Colors.Red);
+			DebugDraw3D.DrawLine(topRightPoint, bottomRightPoint, Colors.Red);
+			DebugDraw3D.DrawLine(bottomRightPoint, bottomPoint, Colors.Red);
+			DebugDraw3D.DrawLine(bottomPoint, bottomLeftPoint, Colors.Red);
+			DebugDraw3D.DrawLine(bottomLeftPoint, topLeftPoint, Colors.Red);
+			DebugDraw3D.DrawLine(topLeftPoint, topPoint, Colors.Red);
+		}
+		else
+		{
+			// --- OCTAGON (Elongated Length) ---
+			// Top and bottom points split horizontally by (L - H)
+			float topFlatHalfWidth = halfL - (unitL / 2.0f);
+	
+			Vector3 topLeftFlat     = new Vector3(-topFlatHalfWidth, 0,  halfH);
+			Vector3 topRightFlat    = new Vector3( topFlatHalfWidth, 0,  halfH);
+			Vector3 rightTop        = new Vector3( halfL,            0,  sideZ);
+			Vector3 rightBottom     = new Vector3( halfL,            0, -sideZ);
+			Vector3 bottomRightFlat = new Vector3( topFlatHalfWidth, 0, -halfH);
+			Vector3 bottomLeftFlat  = new Vector3(-topFlatHalfWidth, 0, -halfH);
+			Vector3 leftBottom      = new Vector3(-halfL,            0, -sideZ);
+			Vector3 leftTop         = new Vector3(-halfL,            0,  sideZ);
+
+			DebugDraw3D.DrawLine(topLeftFlat, topRightFlat, Colors.Red);
+			DebugDraw3D.DrawLine(topRightFlat, rightTop, Colors.Red);
+			DebugDraw3D.DrawLine(rightTop, rightBottom, Colors.Red);
+			DebugDraw3D.DrawLine(rightBottom, bottomRightFlat, Colors.Red);
+			DebugDraw3D.DrawLine(bottomRightFlat, bottomLeftFlat, Colors.Red);
+			DebugDraw3D.DrawLine(bottomLeftFlat, leftBottom, Colors.Red);
+			DebugDraw3D.DrawLine(leftBottom, leftTop, Colors.Red);
+			DebugDraw3D.DrawLine(leftTop, topLeftFlat, Colors.Red);
+		}
+
+	}
+	
+	private void ConstructGrid()
+	{
+		ClearGrid(); // Clear any existing hexes in the grid
+
+		mapContainer = new Node3D();
+		mapContainer.Name = "Map";
+		AddChild(mapContainer);
+
+		// Node sceneRoot = GetTree().activeScene?.Root;
+		// if (sceneRoot != null)
+		// {
+		// 	mapContainer.Owner = sceneRoot;
+		// }
+
+		float unitL = Mathf.Sqrt(3) * hex_size; // Width of a hexagon
+		float unitVSpacing = 1.5f * hex_size; // Vertical spacing between Rows
+
+		// loop through the rows
+		for (int row = 0; row < gridHeight; row++)
+		{
+			float zPos = row * unitVSpacing; // spread the columns
+
+			// loop through the columns
+			for (int col = 0; col < gridLength; col++)
+			{
+				float xPos = col * unitL;
+
+				// Stagger every other row
+				if (row % 2 != 0)
+				{
+					xPos += unitL / 2.0f;
+				}
+
+				// Create a new instance of the hex tile for this grid position
+				Node3D hexTileInstance = tileScene.Instantiate<Node3D>();
+				
+				// Add the hex tile instance to the map container
+				mapContainer.AddChild(hexTileInstance);
+
+				// Set the position of the hex tile instance based on its grid coordinates
+				hexTileInstance.GlobalPosition = new Vector3(xPos, 0, zPos);
+
+				// Store the hex tile instance in the dictionary with its grid position as the key
+				Vector3I gridPos = new Vector3I(col, 0, row);
+				hexGrid[gridPos] = hexTileInstance;
+			}
+		}
+
+	}
+	
+	private void ClearGrid()
+    {
+        mapContainer?.QueueFree(); // Remove the map container and all its children from the scene
+		mapContainer = null; // Reset the map container reference
+        hexGrid.Clear();
+    }
+
+
+	// private bool CheckIfValidPrimaryGrid(Vector2I gridPos)
+	// {
+	// 	return gridPos.X >= 0 && gridPos.X < gridSize.X && gridPos.Y >= 0 && gridPos.Y < gridSize.Y;
+	// }
+
+	// private bool CheckIfValidDualGrid(Vector2I gridPos)
+	// {
+	// 	return gridPos.X >= 0 && gridPos.X < gridSize.X - 1 && gridPos.Y >= 0 && gridPos.Y < gridSize.Y - 1;
+	// }
 }
 

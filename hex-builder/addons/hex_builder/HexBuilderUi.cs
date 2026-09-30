@@ -10,14 +10,32 @@ public partial class HexBuilderUi : Control
 	// UI needs to be Manually referenced
 	[Export]
 	Button testButton;
+	[Export]
+	SpinBox gridLengthSpinBox;
+	[Export]
+	SpinBox gridHeightSpinBox;
+	[Export]
+	Button generateGridButton;
 
 
 	////////////////       Tool UI Life Cycle
 	public override void _EnterTree(){
-		testButton.Pressed += Init; // add event to Pressed test button
+		testButton.Pressed += StopTool; // add event to Pressed test button
+		generateGridButton.Pressed += GenerateGrid; // add event to Pressed generate grid button
 	}
 
 	public void Init(){
 		hexBuilder.Init();  // Initializes the functionality of the tool
+	}
+
+	public void GenerateGrid(){
+		int length = (int)gridLengthSpinBox.Value;
+		int height = (int)gridHeightSpinBox.Value;
+		hexBuilder.SetGridSize(length, height);
+		hexBuilder.Init();  // Initializes the functionality of the tool
+	}
+
+	public void StopTool(){
+		hexBuilder.StopTool();  // Stops the functionality of the tool
 	}
 }

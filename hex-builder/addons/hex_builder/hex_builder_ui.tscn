@@ -2,18 +2,70 @@
 
 [ext_resource type="Script" uid="uid://brhqxsybxdlob" path="res://addons/hex_builder/HexBuilderUi.cs" id="1_m4e8m"]
 
-[node name="HexBuilderUi" type="Control" unique_id=476009712 node_paths=PackedStringArray("testButton")]
+[node name="HexBuilderUi" type="Control" unique_id=476009712 node_paths=PackedStringArray("testButton", "gridLengthSpinBox", "gridHeightSpinBox", "generateGridButton")]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+offset_right = 2.0
 grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_m4e8m")
 testButton = NodePath("Button")
+gridLengthSpinBox = NodePath("VBoxContainer/HBoxContainer/SpinBox")
+gridHeightSpinBox = NodePath("VBoxContainer/HBoxContainer/SpinBox2")
+generateGridButton = NodePath("VBoxContainer/GenerateMapButton")
 
 [node name="Button" type="Button" parent="." unique_id=1008749424]
 layout_mode = 1
 offset_right = 98.0
 offset_bottom = 31.0
 text = "Test button"
+
+[node name="VBoxContainer" type="VBoxContainer" parent="." unique_id=1672856038]
+layout_mode = 1
+anchors_preset = -1
+anchor_right = 0.004
+anchor_bottom = 1.0
+offset_left = 5.0
+offset_top = 46.0
+offset_right = 508.384
+offset_bottom = -537.0
+grow_horizontal = 2
+grow_vertical = 2
+alignment = 1
+
+[node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer" unique_id=595876029]
+layout_mode = 2
+size_flags_stretch_ratio = 0.8
+alignment = 1
+
+[node name="Label" type="Label" parent="VBoxContainer/HBoxContainer" unique_id=922175632]
+layout_mode = 2
+text = "Lenght and Height of the map:"
+
+[node name="SpinBox" type="SpinBox" parent="VBoxContainer/HBoxContainer" unique_id=272495174]
+custom_minimum_size = Vector2(120, 0)
+layout_mode = 2
+offset_transform_enabled = true
+min_value = 1.0
+max_value = 60.0
+value = 6.0
+rounded = true
+prefix = "Lenght"
+
+[node name="SpinBox2" type="SpinBox" parent="VBoxContainer/HBoxContainer" unique_id=395342612]
+custom_minimum_size = Vector2(120, 0)
+layout_mode = 2
+offset_transform_position_ratio = Vector2(1.23, 0)
+min_value = 1.0
+max_value = 60.0
+value = 6.0
+rounded = true
+prefix = "Heigth"
+
+[node name="GenerateMapButton" type="Button" parent="VBoxContainer" unique_id=531911255]
+layout_mode = 2
+size_flags_horizontal = 8
+layout_direction = 2
+text = "Generate Map"
