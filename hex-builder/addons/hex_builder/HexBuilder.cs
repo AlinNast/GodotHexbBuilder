@@ -38,14 +38,16 @@ public partial class HexBuilder : EditorPlugin
     /// <summary>
 	/// Stores the Hexes as value and they are accessible by their grid position as key. 
 	/// </summary>
-	private Dictionary<Vector3I, Node3D> hexGrid = new Dictionary<Vector3I, Node3D>();
+	private Dictionary<Vector2I, Node3D> hexGrid = new Dictionary<Vector2I, Node3D>();
 
 	private Node3D mapContainer; // Node3D that will hold all the hex tiles in the scene
 
 	/// <summary>
 	/// Track where the mouse is hovering in the grid
 	/// </summary>
-	Vector3 pointerGridPos = Vector3.Zero;
+	Vector3? hoveredTilePosition = null;
+
+
 	private EditorDock dock;
 
 	/// <summary>
@@ -58,6 +60,8 @@ public partial class HexBuilder : EditorPlugin
 	/// </summary>
 	private HexBuilderUi dockUI;
 
+
+/// /////////////////////////////// Plugin Life Cycle Functions////////////////////////////////////
 	public override void _EnterTree()
 	{
 		/// Create a new dock for the Hex Builder tool and add it to the editor's interface
@@ -92,9 +96,8 @@ public partial class HexBuilder : EditorPlugin
 			return;
 		}
 
-		//ConstructDebugGrid();
+		ConstructDebugGrid();
 		
-		DebugDraw3D.DrawSphere(new Vector3(pointerGridPos.X, 0, pointerGridPos.Z), 0.04f, Colors.Yellow, 0.1f);
 	}
 
 	public void Init()
@@ -112,42 +115,56 @@ public partial class HexBuilder : EditorPlugin
 		toolActive = true;
 	}
 
-	public void SetCurrentScene()
-	{
-		activeRoot = EditorInterface.Singleton.GetEditedSceneRoot();
-	}
 
+/// ////////////////////////////////////  Input Handling Functions  //////////////////////////////////////
 
+/// //  This is a built-in Godot EditorPlugin method. It intercepts raw mouse and keyboard events directly inside the 3D Editor Viewport before Godot handles them.
 	public override int _Forward3DGuiInput(Camera3D camera, InputEvent @event)
 	{
+		// If the tool is not active, pass the input event to Godot for normal processing
 		if (!toolActive)
 		{
 			return (int)EditorPlugin.AfterGuiInput.Pass;
 		}
 
+		// Handle mouse motion events to update the pointer position in the grid
 		if (@event is InputEventMouseMotion motion)
 		{
-			UpdatePointerPosition(camera, motion.Position);
+			HandleMouseHover(camera, motion.Position);
 			return (int)EditorPlugin.AfterGuiInput.Pass;
 		}
 
-		if (@event is InputEventMouseButton mouse &&
-			mouse.Pressed &&
-			(mouse.ButtonIndex == MouseButton.Left || mouse.ButtonIndex == MouseButton.Right))
+		// Handle mouse button events to set the state of the hex tile at the pointer position
+		if (@event is InputEventMouseButton mouse && mouse.Pressed && mouse.ButtonIndex == MouseButton.Left)
 		{
-			Vector2I gridPoint = RayToGridPoint(camera, mouse.Position);
-			// if (CheckIfValidPrimaryGrid(gridPoint))
-			// {
-			// 	SetBlockState(gridPoint, mouse.ButtonIndex == MouseButton.Left);
-			// 	pointerGridPos = new Vector3(gridPoint.X, 0, gridPoint.Y);
-			// }
 
-			return (int)EditorPlugin.AfterGuiInput.Stop;
+			// Case where you left click the hex in the viewport
+			Vector3? hitWorldPos = GetWorldHitPosition(camera, mouse.Position);
+			if (hitWorldPos.HasValue)
+			{
+				Vector3I gridCoord = WorldToGridCoord(hitWorldPos.Value);
+
+				// Look up the tile in your dictionary based on clicked grid coordinates
+				Node3D clickedHex = GetHexAt(new Vector2I(gridCoord.X, gridCoord.Z));
+
+				// Debug print the name
+				if (clickedHex != null)
+				{
+					GD.Print($"Clicked Tile: {clickedHex.Name} at Grid Coord: {gridCoord}");
+				}
+				else
+				{
+					GD.Print($"Clicked empty grid cell at: {gridCoord}");
+				}
+			}
+			
+
+			return (int)EditorPlugin.AfterGuiInput.Pass;
 		}
-
 		return (int)EditorPlugin.AfterGuiInput.Pass;
 	}
 
+	// 	
 	private Vector2I RayToGridPoint(Camera3D camera, Vector2 screenPos)
 	{
 		Vector3 rayOrigin = camera.ProjectRayOrigin(screenPos);
@@ -166,37 +183,27 @@ public partial class HexBuilder : EditorPlugin
 		);
 	}
 
-	private void UpdatePointerPosition(Camera3D camera, Vector2 screenPos)
+	/// Handle mouse hover to update the hovered tile position
+	private void HandleMouseHover(Camera3D camera, Vector2 screenPos)
 	{
-		Vector3 rayOrigin = camera.ProjectRayOrigin(screenPos);
-		Vector3 rayDir = camera.ProjectRayNormal(screenPos);
+		Vector3? hitWorldPos = GetWorldHitPosition(camera, screenPos);
 
-		Plane plane = new Plane(Vector3.Up, 0);
-		Vector3? hit = plane.IntersectsRay(rayOrigin, rayDir);
-		if (hit == null)
+		if (hitWorldPos.HasValue)
 		{
-			return;
+			Vector3I gridCoord = WorldToGridCoord(hitWorldPos.Value);
+			Node3D hoveredTile = GetHexAt(new Vector2I(gridCoord.X, gridCoord.Z));
+
+			if (hoveredTile != null)
+			{
+				// Store the global position of the hovered tile
+				hoveredTilePosition = hoveredTile.GlobalPosition;
+				return;
+			}
 		}
 
-		pointerGridPos = new Vector3(
-			Mathf.RoundToInt(hit.Value.X),
-			0,
-			Mathf.RoundToInt(hit.Value.Z)
-		);
+		// Clear hover state if mouse moves off the grid
+		hoveredTilePosition = null;
 	}
-
-	public void SetBlockState(Vector2I pos, bool state)
-	{
-		// // if (!CheckIfValidPrimaryGrid(pos))
-		// {
-		// 	return;
-		// }
-
-		// primaryBlockGrid[pos.X, pos.Y] = state;
-		// CalculateBitMask(pos);
-	}
-
-
 
 
 	public void DirContents(string path)
@@ -249,62 +256,22 @@ public partial class HexBuilder : EditorPlugin
 
 	private void ConstructDebugGrid()
 	{
-		// Unit dimensions of the grid
-		float unitL = Mathf.Sqrt(3) * hex_size; // Width of a hexagon
-		float unitH = 2 * hex_size; // Height of a hexagon
-		float unitVSpacing = 1.5f * hex_size; // Vertical spacing between hexagon centers
-
-		float L = gridLength * unitL;
-    	float H = (gridHeight > 1) ? ((gridHeight - 1) * unitVSpacing + unitH) : unitH;
-		// Radius / Half-dimensions
-		float halfL = L / 2.0f;
-		float halfH = H / 2.0f;
-
-		float sideZ = halfH - hex_size; // Z-coordinate for the side vertices of the hexagon
-
-		if (L <= H)
+		if (hoveredTilePosition.HasValue)
 		{
-			// --- POINTED-TOP HEXAGON ---
-			// Side vertices sit at Z = +/- (H / 4) to ensure equal side lengths when L == H
-			
+			GD.Print($"Hovered Tile Position: {hoveredTilePosition.Value}");
+			// Slightly lift outline (Y + 0.05f) to avoid z-fighting with the tile mesh
+			Vector3 center = hoveredTilePosition.Value + new Vector3(0, 10f, 0);
 
-			Vector3 topPoint         = new Vector3(0,       0,  halfH);
-			Vector3 topRightPoint    = new Vector3(halfL,   0,  sideZ);
-			Vector3 bottomRightPoint = new Vector3(halfL,   0, -sideZ);
-			Vector3 bottomPoint      = new Vector3(0,       0, -halfH);
-			Vector3 bottomLeftPoint  = new Vector3(-halfL,  0, -sideZ);
-			Vector3 topLeftPoint     = new Vector3(-halfL,  0,  sideZ);
+			// Get 6 corner positions for unit hex_size
+			Vector3[] corners = GetHexCorners(center, hex_size);
 
-			DebugDraw3D.DrawLine(topPoint, topRightPoint, Colors.Red);
-			DebugDraw3D.DrawLine(topRightPoint, bottomRightPoint, Colors.Red);
-			DebugDraw3D.DrawLine(bottomRightPoint, bottomPoint, Colors.Red);
-			DebugDraw3D.DrawLine(bottomPoint, bottomLeftPoint, Colors.Red);
-			DebugDraw3D.DrawLine(bottomLeftPoint, topLeftPoint, Colors.Red);
-			DebugDraw3D.DrawLine(topLeftPoint, topPoint, Colors.Red);
-		}
-		else
-		{
-			// --- OCTAGON (Elongated Length) ---
-			// Top and bottom points split horizontally by (L - H)
-			float topFlatHalfWidth = halfL - (unitL / 2.0f);
-	
-			Vector3 topLeftFlat     = new Vector3(-topFlatHalfWidth, 0,  halfH);
-			Vector3 topRightFlat    = new Vector3( topFlatHalfWidth, 0,  halfH);
-			Vector3 rightTop        = new Vector3( halfL,            0,  sideZ);
-			Vector3 rightBottom     = new Vector3( halfL,            0, -sideZ);
-			Vector3 bottomRightFlat = new Vector3( topFlatHalfWidth, 0, -halfH);
-			Vector3 bottomLeftFlat  = new Vector3(-topFlatHalfWidth, 0, -halfH);
-			Vector3 leftBottom      = new Vector3(-halfL,            0, -sideZ);
-			Vector3 leftTop         = new Vector3(-halfL,            0,  sideZ);
-
-			DebugDraw3D.DrawLine(topLeftFlat, topRightFlat, Colors.Red);
-			DebugDraw3D.DrawLine(topRightFlat, rightTop, Colors.Red);
-			DebugDraw3D.DrawLine(rightTop, rightBottom, Colors.Red);
-			DebugDraw3D.DrawLine(rightBottom, bottomRightFlat, Colors.Red);
-			DebugDraw3D.DrawLine(bottomRightFlat, bottomLeftFlat, Colors.Red);
-			DebugDraw3D.DrawLine(bottomLeftFlat, leftBottom, Colors.Red);
-			DebugDraw3D.DrawLine(leftBottom, leftTop, Colors.Red);
-			DebugDraw3D.DrawLine(leftTop, topLeftFlat, Colors.Red);
+			// Draw the 6 boundary edges using DebugDraw3D
+			DebugDraw3D.DrawLine(corners[0], corners[1], Colors.Yellow);
+			DebugDraw3D.DrawLine(corners[1], corners[2], Colors.Yellow);
+			DebugDraw3D.DrawLine(corners[2], corners[3], Colors.Yellow);
+			DebugDraw3D.DrawLine(corners[3], corners[4], Colors.Yellow);
+			DebugDraw3D.DrawLine(corners[4], corners[5], Colors.Yellow);
+			DebugDraw3D.DrawLine(corners[5], corners[0], Colors.Yellow);
 		}
 
 	}
@@ -313,15 +280,20 @@ public partial class HexBuilder : EditorPlugin
 	{
 		ClearGrid(); // Clear any existing hexes in the grid
 
+		// Create a new Node3D to hold the hex tiles
 		mapContainer = new Node3D();
 		mapContainer.Name = "Map";
-		AddChild(mapContainer);
+		if (activeRoot != null)
+		{
+			activeRoot.AddChild(mapContainer);
+			mapContainer.Owner = activeRoot; // Set owner AFTER AddChild
+		}
+		else
+		{
+			AddChild(mapContainer);
+		}
 
-		// Node sceneRoot = GetTree().activeScene?.Root;
-		// if (sceneRoot != null)
-		// {
-		// 	mapContainer.Owner = sceneRoot;
-		// }
+	
 
 		float unitL = Mathf.Sqrt(3) * hex_size; // Width of a hexagon
 		float unitVSpacing = 1.5f * hex_size; // Vertical spacing between Rows
@@ -344,15 +316,24 @@ public partial class HexBuilder : EditorPlugin
 
 				// Create a new instance of the hex tile for this grid position
 				Node3D hexTileInstance = tileScene.Instantiate<Node3D>();
+
+				// Give each tile a readable unique name in the scene tree
+		        hexTileInstance.Name = $"Hex_{col}_{row}";
 				
 				// Add the hex tile instance to the map container
-				mapContainer.AddChild(hexTileInstance);
+				mapContainer.AddChild(hexTileInstance, forceReadableName: true);
+
+				// Assign the scene root owner so it shows in the editor Scene Dock
+				if (activeRoot != null)
+				{
+					hexTileInstance.Owner = activeRoot;
+				}
 
 				// Set the position of the hex tile instance based on its grid coordinates
 				hexTileInstance.GlobalPosition = new Vector3(xPos, 0, zPos);
 
 				// Store the hex tile instance in the dictionary with its grid position as the key
-				Vector3I gridPos = new Vector3I(col, 0, row);
+				Vector2I gridPos = new Vector2I(col, row);
 				hexGrid[gridPos] = hexTileInstance;
 			}
 		}
@@ -366,15 +347,69 @@ public partial class HexBuilder : EditorPlugin
         hexGrid.Clear();
     }
 
+	public void SetCurrentScene()
+	{
+		activeRoot = EditorInterface.Singleton.GetEditedSceneRoot();
+	}
 
-	// private bool CheckIfValidPrimaryGrid(Vector2I gridPos)
-	// {
-	// 	return gridPos.X >= 0 && gridPos.X < gridSize.X && gridPos.Y >= 0 && gridPos.Y < gridSize.Y;
-	// }
 
-	// private bool CheckIfValidDualGrid(Vector2I gridPos)
-	// {
-	// 	return gridPos.X >= 0 && gridPos.X < gridSize.X - 1 && gridPos.Y >= 0 && gridPos.Y < gridSize.Y - 1;
-	// }
+	private Vector3? GetWorldHitPosition(Camera3D camera, Vector2 screenPos)
+	{
+		Vector3 rayOrigin = camera.ProjectRayOrigin(screenPos);
+		Vector3 rayDir = camera.ProjectRayNormal(screenPos);
+
+		Plane plane = new Plane(Vector3.Up, 0);
+		return plane.IntersectsRay(rayOrigin, rayDir);
+	}
+
+	private Vector3I WorldToGridCoord(Vector3 worldPos)
+	{
+		float unitWidth = Mathf.Sqrt(3.0f) * hex_size;
+		float rowStep = 1.5f * hex_size;
+
+		// Calculate nearest row index
+		int row = Mathf.RoundToInt(worldPos.Z / rowStep);
+
+		// Un-stagger X position for odd rows
+		float xPos = worldPos.X;
+		if (row % 2 != 0)
+		{
+			xPos -= unitWidth / 2.0f;
+		}
+
+		// Calculate nearest column index
+		int col = Mathf.RoundToInt(xPos / unitWidth);
+
+		return new Vector3I(col, 0, row);
+	}
+
+	public Node3D GetHexAt(Vector2I gridCoord)
+    {
+        if (hexGrid.TryGetValue(gridCoord, out Node3D hex))
+        {
+            return hex;
+        }
+        return null;
+    }
+
+	private Vector3[] GetHexCorners(Vector3 center, float size)
+	{
+		float halfWidth = (Mathf.Sqrt(3.0f) / 2.0f) * size;
+		float halfHeight = size;
+		float sideZ = size / 2.0f;
+
+		return new Vector3[]
+		{
+			center + new Vector3(0, 0, halfHeight),           // 0: Top Peak
+			center + new Vector3(halfWidth, 0, sideZ),        // 1: Top Right
+			center + new Vector3(halfWidth, 0, -sideZ),       // 2: Bottom Right
+			center + new Vector3(0, 0, -halfHeight),          // 3: Bottom Peak
+			center + new Vector3(-halfWidth, 0, -sideZ),      // 4: Bottom Left
+			center + new Vector3(-halfWidth, 0, sideZ)        // 5: Top Left
+		};
+	}
+
+	
+
 }
 

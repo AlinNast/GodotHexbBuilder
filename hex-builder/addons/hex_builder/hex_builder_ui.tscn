@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" uid="uid://brhqxsybxdlob" path="res://addons/hex_builder/HexBuilderUi.cs" id="1_m4e8m"]
 
-[node name="HexBuilderUi" type="Control" unique_id=476009712 node_paths=PackedStringArray("testButton", "gridLengthSpinBox", "gridHeightSpinBox", "generateGridButton")]
+[node name="HexBuilderUi" type="Control" unique_id=476009712 node_paths=PackedStringArray("testButton", "gridLengthSpinBox", "gridHeightSpinBox", "generateGridButton", "resetButton")]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -15,22 +15,38 @@ testButton = NodePath("Button")
 gridLengthSpinBox = NodePath("VBoxContainer/HBoxContainer/SpinBox")
 gridHeightSpinBox = NodePath("VBoxContainer/HBoxContainer/SpinBox2")
 generateGridButton = NodePath("VBoxContainer/GenerateMapButton")
+resetButton = NodePath("ResetMap")
 
 [node name="Button" type="Button" parent="." unique_id=1008749424]
 layout_mode = 1
-offset_right = 98.0
-offset_bottom = 31.0
+anchors_preset = -1
+anchor_bottom = 0.29500002
+offset_left = 8.0
+offset_top = 156.0
+offset_right = 106.0
+offset_bottom = -0.16000366
 text = "Test button"
+
+[node name="ResetMap" type="Button" parent="." unique_id=1579223249]
+visible = false
+layout_mode = 1
+anchors_preset = -1
+anchor_bottom = 0.108
+offset_left = 4.0
+offset_top = 4.0
+offset_right = 102.0
+offset_bottom = -30.984001
+text = "Reset button"
 
 [node name="VBoxContainer" type="VBoxContainer" parent="." unique_id=1672856038]
 layout_mode = 1
 anchors_preset = -1
 anchor_right = 0.004
 anchor_bottom = 1.0
-offset_left = 5.0
-offset_top = 46.0
-offset_right = 508.384
-offset_bottom = -537.0
+offset_left = 3.0
+offset_top = 3.0
+offset_right = 506.384
+offset_bottom = -579.0
 grow_horizontal = 2
 grow_vertical = 2
 alignment = 1
