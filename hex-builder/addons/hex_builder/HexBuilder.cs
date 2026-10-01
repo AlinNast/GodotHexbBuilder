@@ -40,6 +40,9 @@ public partial class HexBuilder : EditorPlugin
 	/// </summary>
 	private Dictionary<Vector2I, Node3D> hexGrid = new Dictionary<Vector2I, Node3D>();
 
+	/// <summary>
+	/// Gets created when map is generated and deleted on reset. It is the parent of all hexes
+	/// </summary>
 	private Node3D mapContainer; // Node3D that will hold all the hex tiles in the scene
 
 	/// <summary>
@@ -48,6 +51,9 @@ public partial class HexBuilder : EditorPlugin
 	Vector3? hoveredTilePosition = null;
 
 
+	/// <summary>
+	/// Stores a reference to the EditorDock that will hold the HexBuilderUi instance. 
+	/// </summary>
 	private EditorDock dock;
 
 	/// <summary>
@@ -59,6 +65,11 @@ public partial class HexBuilder : EditorPlugin
 	/// Stores a reference to the HexBuilderUi instance that is added to the dock.
 	/// </summary>
 	private HexBuilderUi dockUI;
+
+	/// <summary>
+	/// // Packed scene of the hex tile to paint with, selected from the UI
+	/// </summary>
+	private PackedScene selectedPaintTileScene; 
 
 
 /// /////////////////////////////// Plugin Life Cycle Functions////////////////////////////////////
@@ -142,20 +153,10 @@ public partial class HexBuilder : EditorPlugin
 			Vector3? hitWorldPos = GetWorldHitPosition(camera, mouse.Position);
 			if (hitWorldPos.HasValue)
 			{
-				Vector3I gridCoord = WorldToGridCoord(hitWorldPos.Value);
+				Vector3I gridCoord3D = WorldToGridCoord(hitWorldPos.Value);
+				Vector2I gridCoord = new Vector2I(gridCoord3D.X, gridCoord3D.Z);
 
-				// Look up the tile in your dictionary based on clicked grid coordinates
-				Node3D clickedHex = GetHexAt(new Vector2I(gridCoord.X, gridCoord.Z));
-
-				// Debug print the name
-				if (clickedHex != null)
-				{
-					GD.Print($"Clicked Tile: {clickedHex.Name} at Grid Coord: {gridCoord}");
-				}
-				else
-				{
-					GD.Print($"Clicked empty grid cell at: {gridCoord}");
-				}
+				PaintTileAt(gridCoord, hitWorldPos.Value);
 			}
 			
 
@@ -248,6 +249,11 @@ public partial class HexBuilder : EditorPlugin
 		init = false;
 	}
 
+
+	public void SetSelectedTileScene(PackedScene scene)
+	{
+		selectedPaintTileScene = scene;
+	}
 
 
             /////////////////////////////////  UTILITY FUNCTIONS  //////////////////////////////////////
@@ -352,6 +358,42 @@ public partial class HexBuilder : EditorPlugin
 		activeRoot = EditorInterface.Singleton.GetEditedSceneRoot();
 	}
 
+	private void PaintTileAt(Vector2I gridCoord, Vector3 worldPos)
+	{
+		if (selectedPaintTileScene == null)
+		{
+			GD.PrintErr("No tile scene selected for painting.");
+			return;
+		}
+
+
+		// If a tile exists there, remove it first
+		Node3D existingTile = GetHexAt(gridCoord);
+		if (existingTile != null)
+		{
+			existingTile.QueueFree();
+			hexGrid.Remove(gridCoord);
+		}
+
+		// Create a new instance of the selected tile scene
+		Node3D newTileInstance = selectedPaintTileScene.Instantiate<Node3D>();
+		newTileInstance.Name = $"Hex_{gridCoord.X}_{gridCoord.Y}";
+		hexGrid[gridCoord] = newTileInstance; // Store the new tile in the dictionary
+
+		// Add the hex tile instance to the map container
+				mapContainer.AddChild(newTileInstance, forceReadableName: true);
+
+				// Assign the scene root owner so it shows in the editor Scene Dock
+				if (activeRoot != null)
+				{
+					newTileInstance.Owner = activeRoot;
+				}
+
+
+		// Set the position of the new tile instance based on its grid coordinates
+		Vector3 tileWorldPos = GridCoordToWorld(gridCoord);
+		newTileInstance.GlobalPosition = tileWorldPos;
+	}
 
 	private Vector3? GetWorldHitPosition(Camera3D camera, Vector2 screenPos)
 	{
@@ -381,6 +423,23 @@ public partial class HexBuilder : EditorPlugin
 		int col = Mathf.RoundToInt(xPos / unitWidth);
 
 		return new Vector3I(col, 0, row);
+	}
+
+	// Convert Vector2I (col, row) back to exact 3D World Position
+	private Vector3 GridCoordToWorld(Vector2I gridCoord)
+	{
+		float unitWidth = Mathf.Sqrt(3.0f) * hex_size;
+		float rowStep = 1.5f * hex_size;
+
+		float xPos = gridCoord.X * unitWidth;
+		if (gridCoord.Y % 2 != 0)
+		{
+			xPos += unitWidth / 2.0f;
+		}
+
+		float zPos = gridCoord.Y * rowStep;
+
+		return new Vector3(xPos, 0, zPos);
 	}
 
 	public Node3D GetHexAt(Vector2I gridCoord)

@@ -1,7 +1,9 @@
 [gd_scene format=3 uid="uid://0jhhuo114jgx"]
 
+[ext_resource type="Script" uid="uid://buaqgyt6rgmq1" path="res://tiles/scripts/HexTileBase.cs" id="1_tymij"]
 [ext_resource type="PackedScene" uid="uid://b3ox1e1s8t4gn" path="res://tiles/BaseHex.glb" id="1_vsnmt"]
 
 [node name="HexTileBase" type="Node3D" unique_id=1542725830]
+script = ExtResource("1_tymij")
 
 [node name="BaseHex" parent="." unique_id=775923034 instance=ExtResource("1_vsnmt")]

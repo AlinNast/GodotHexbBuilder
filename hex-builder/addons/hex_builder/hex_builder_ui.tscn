@@ -2,12 +2,11 @@
 
 [ext_resource type="Script" uid="uid://brhqxsybxdlob" path="res://addons/hex_builder/HexBuilderUi.cs" id="1_m4e8m"]
 
-[node name="HexBuilderUi" type="Control" unique_id=476009712 node_paths=PackedStringArray("testButton", "gridLengthSpinBox", "gridHeightSpinBox", "generateGridButton", "resetButton")]
+[node name="HexBuilderUi" type="Control" unique_id=476009712 node_paths=PackedStringArray("testButton", "gridLengthSpinBox", "gridHeightSpinBox", "generateGridButton", "resetButton", "tileButtonContainer")]
 layout_mode = 3
-anchors_preset = 15
-anchor_right = 1.0
+anchor_right = 0.45800003
 anchor_bottom = 1.0
-offset_right = 2.0
+offset_right = 0.38397217
 grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_m4e8m")
@@ -16,15 +15,16 @@ gridLengthSpinBox = NodePath("VBoxContainer/HBoxContainer/SpinBox")
 gridHeightSpinBox = NodePath("VBoxContainer/HBoxContainer/SpinBox2")
 generateGridButton = NodePath("VBoxContainer/GenerateMapButton")
 resetButton = NodePath("ResetMap")
+tileButtonContainer = NodePath("VBoxContainer2")
 
 [node name="Button" type="Button" parent="." unique_id=1008749424]
 layout_mode = 1
 anchors_preset = -1
 anchor_bottom = 0.29500002
-offset_left = 8.0
-offset_top = 156.0
-offset_right = 106.0
-offset_bottom = -0.16000366
+offset_left = 137.0
+offset_top = 314.0
+offset_right = 235.0
+offset_bottom = 157.84
 text = "Test button"
 
 [node name="ResetMap" type="Button" parent="." unique_id=1579223249]
@@ -32,21 +32,21 @@ visible = false
 layout_mode = 1
 anchors_preset = -1
 anchor_bottom = 0.108
-offset_left = 4.0
-offset_top = 4.0
-offset_right = 102.0
-offset_bottom = -30.984001
+offset_left = 10.0
+offset_top = 314.0
+offset_right = 118.0
+offset_bottom = 279.016
 text = "Reset button"
 
 [node name="VBoxContainer" type="VBoxContainer" parent="." unique_id=1672856038]
 layout_mode = 1
 anchors_preset = -1
-anchor_right = 0.004
-anchor_bottom = 1.0
+anchor_right = 0.003
+anchor_bottom = 0.106000006
 offset_left = 3.0
 offset_top = 3.0
-offset_right = 506.384
-offset_bottom = -579.0
+offset_right = 507.538
+offset_bottom = 0.31199646
 grow_horizontal = 2
 grow_vertical = 2
 alignment = 1
@@ -85,3 +85,10 @@ layout_mode = 2
 size_flags_horizontal = 8
 layout_direction = 2
 text = "Generate Map"
+
+[node name="VBoxContainer2" type="VBoxContainer" parent="." unique_id=1226973275]
+layout_mode = 0
+offset_left = 1.0
+offset_top = 93.0
+offset_right = 511.0
+offset_bottom = 239.0

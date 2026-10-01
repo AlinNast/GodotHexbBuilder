@@ -1,0 +1,15 @@
+[gd_scene format=3 uid="uid://ddnu8kbr75qd"]
+
+[ext_resource type="PackedScene" uid="uid://b3ox1e1s8t4gn" path="res://tiles/BaseHex.glb" id="1_ru8ny"]
+[ext_resource type="Material" uid="uid://bdql7gi50c0vn" path="res://tiles/materials/green.tres" id="2_twk76"]
+
+[sub_resource type="SphereMesh" id="SphereMesh_ab7ba"]
+material = ExtResource("2_twk76")
+
+[node name="HexTileGreen" type="Node3D" unique_id=1542725830]
+
+[node name="BaseHex" parent="." unique_id=775923034 instance=ExtResource("1_ru8ny")]
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="." unique_id=1441756103]
+transform = Transform3D(1.4557135, 0, 0, 0, 1, 0, 0, 0, 1.5040306, 0, 0, 0)
+mesh = SubResource("SphereMesh_ab7ba")
