@@ -1,19 +1,8 @@
 using Godot;
 using System;
 
-[GlobalClass]
-public partial class HexTileBase : Node3D
+public partial class HexTileGreen : HexTileBase
 {
-	[Export]
-	public Texture2D tileIcon { get; set; }
-
-	[Export]
-	public string tileName { get; set; }
-
-	[ExportGroup("Tile Properties")]
-	[Export]
-	public bool isWalkable { get; set; } = true;
-
 	// Called when the node enters the scene tree for the first time.
 	public override void _Ready()
 	{

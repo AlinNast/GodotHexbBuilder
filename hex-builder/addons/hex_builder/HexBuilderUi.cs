@@ -20,6 +20,8 @@ public partial class HexBuilderUi : Control
 	[Export]
 	Button resetButton;
 	[Export]
+	Button confirmButton;
+	[Export]
 	VBoxContainer tileButtonContainer;
 	[Export]
 	VBoxContainer GeneratorContainer;
@@ -39,9 +41,10 @@ public partial class HexBuilderUi : Control
 	public override void _EnterTree(){
 		GeneratorContainer.Visible = true; // Show the generator container when the tool becomes active
 		TilePickerContainer.Visible = false; // Hide the tile picker container when the tool becomes active
+		
 		resetButton.Pressed += StopTool; // add event to Pressed test button
 		generateGridButton.Pressed += GenerateGrid; // add event to Pressed generate grid button
-		testButton.Pressed += testButtonPressed; // add event to Pressed test button
+		confirmButton.Pressed += confirmButtonPressed; // add event to Pressed confirm button
 	}
 
 	public void Init(){
@@ -52,10 +55,12 @@ public partial class HexBuilderUi : Control
 		int length = (int)gridLengthSpinBox.Value;
 		int height = (int)gridHeightSpinBox.Value;
 		hexBuilder.SetGridSize(length, height);
-		GeneratorContainer.Visible = false; // hide the generator container after generating the grid
-		TilePickerContainer.Visible = true; // Show the tile picker container after generating the grid
+
 		PopulateTilePickerUI(); // Populate the tile picker UI with available hex tile scenes
 		hexBuilder.Init();  // Initializes the functionality of the tool
+
+		GeneratorContainer.Visible = false; // hide the generator container after generating the grid
+		TilePickerContainer.Visible = true; // Show the tile picker container after generating the grid
 	}
 
 	public void StopTool(){
@@ -63,10 +68,12 @@ public partial class HexBuilderUi : Control
         {
             child.QueueFree();
         }
-        hexTileScenes.Clear();
+        
+		hexTileScenes.Clear();
+		hexBuilder.StopTool();  // Stops the functionality of the tool
+		
 		TilePickerContainer.Visible = false;
 		GeneratorContainer.Visible = true;
-		hexBuilder.StopTool();  // Stops the functionality of the tool
 	}
 
 	public void PopulateTilePickerUI()
@@ -99,49 +106,57 @@ public partial class HexBuilderUi : Control
 			GD.PrintErr($"Failed to open directory: {hexTileFolderPath}");
 			return;
 		}
-		else
-		{
-			dir.ListDirBegin();
-			string fileName = dir.GetNext();
+		
+		dir.ListDirBegin();
+		string fileName = dir.GetNext();
 
-			// ButtonGroup forces CheckBox/Button nodes to act as single-choice radio options
-			ButtonGroup tileButtonGroup = new ButtonGroup();
-			bool isFirstButton = true;
+		// ButtonGroup forces CheckBox/Button nodes to act as single-choice radio options
+		ButtonGroup tileButtonGroup = new ButtonGroup();
+		bool isFirstButton = true;
 			
-			// loop through all files in the directory
-			while (fileName != "")
+		// loop through all files in the directory
+		while (fileName != "")
+		{
+			// Ignore directories, hidden files, and Godot remap files
+			if (!dir.CurrentIsDir() && fileName.EndsWith(".tscn") && !fileName.StartsWith("."))	
 			{
-				// Ignore directories, hidden files, and Godot remap files
-        		if (!dir.CurrentIsDir() && fileName.EndsWith(".tscn") && !fileName.StartsWith("."))	
+				string scenePath = $"{hexTileFolderPath}/{fileName}";
+				PackedScene tileScene = GD.Load<PackedScene>(scenePath);
+
+				if (tileScene != null)
 				{
-					string scenePath = $"{hexTileFolderPath}/{fileName}";
-					PackedScene tileScene = GD.Load<PackedScene>(scenePath);
+					// Store the scene in the dictionary
+					hexTileScenes[fileName] = tileScene;
 
-					if (tileScene != null)
+					// Format clean name for UI (e.g. "grass_hex.tscn" -> "Grass Hex")
+					string cleanName = fileName.Replace(".tscn", "").Replace("_", " ");
+					cleanName = System.Globalization.CultureInfo.CurrentCulture.TextInfo.ToTitleCase(cleanName);
+
+					// Load icon matching the scene filename (e.g. hex_tile_base.png)
+                    string pngPath = $"{hexTileFolderPath}/{fileName.Replace(".tscn", ".png")}";
+                    Texture2D tileIcon = null;
+                    if (FileAccess.FileExists(pngPath))
+                    {
+                        tileIcon = GD.Load<Texture2D>(pngPath);
+                    }
+
+					// Create a new TileItemUi instance for the tile
+					TileItemUi tileButton = paletteItemPrefab.Instantiate<TileItemUi>();
+					tileButtonContainer.AddChild(tileButton);
+
+					// Capture local reference for delegate callback
+					PackedScene currentScene = tileScene;
+
+					
+					tileButton.Setup(cleanName, tileIcon, tileButtonGroup, isFirstButton);
+					tileButton.OnSelected += () => SetTileToPaint(currentScene);
+
+					// Auto-select the first tile found in the directory as default
+					if (isFirstButton)
 					{
-						// Store the scene in the dictionary
-						hexTileScenes[fileName] = tileScene;
-
-						// Format clean name for UI (e.g. "grass_hex.tscn" -> "Grass Hex")
-						string cleanName = fileName.Replace(".tscn", "").Replace("_", " ");
-						cleanName = System.Globalization.CultureInfo.CurrentCulture.TextInfo.ToTitleCase(cleanName);
-
-						Texture2D tileIcon = ExtractTextureFromTile(tileScene);
-						// Create a new TileItemUi instance for the tile
-						TileItemUi tileButton = paletteItemPrefab.Instantiate<TileItemUi>();
-						tileButtonContainer.AddChild(tileButton);
-
-						// Capture local reference for delegate callback
-						PackedScene currentScene = tileScene;
-						tileButton.Setup(cleanName, tileIcon, tileButtonGroup, isFirstButton);
-						tileButton.OnSelected += () => SetTileToPaint(currentScene);
-
-						// Auto-select the first tile found in the directory as default
-						if (isFirstButton)
-						{
-							SetTileToPaint(currentScene);
-							isFirstButton = false;
-						}
+						SetTileToPaint(currentScene);
+						isFirstButton = false;
+					}
 
 					}
 					else
@@ -149,11 +164,11 @@ public partial class HexBuilderUi : Control
 						GD.PrintErr($"Failed to load scene: {scenePath}");
 					}
 				}
-				fileName = dir.GetNext();
-			}
-			dir.ListDirEnd();
+			fileName = dir.GetNext();
 		}
+		dir.ListDirEnd();
 	}
+	
 
 	public void SetTileToPaint(PackedScene tileScene)
 	{
@@ -162,65 +177,17 @@ public partial class HexBuilderUi : Control
 		GD.Print($"Selected tile scene set to: {tileScene.ResourcePath}");
 	}
 
-	public void testButtonPressed(){
-		hexBuilder.toolActive = !hexBuilder.toolActive; // Toggle the toolActive state
-	}
-
-	private Texture2D ExtractTextureFromTile(PackedScene tileScene)
+	public void confirmButtonPressed()
 	{
-		Node tempNode = tileScene.Instantiate();
-		Texture2D foundTexture = null;
-
-		if (tempNode is Node3D node3D)
-		{
-			// Recursively search for any MeshInstance3D in the tile hierarchy
-			foundTexture = FindTextureInNode(node3D);
-		}
-
-		tempNode.Free();
-		return foundTexture;
+		//hexTileScenes.Clear();
+		hexBuilder.toolActive = false;
+		hexBuilder.init = false; // Stops the functionality of the tool
+		
+		TilePickerContainer.Visible = false;
+		GeneratorContainer.Visible = true;
 	}
+	
 
-	private Texture2D FindTextureInNode(Node node)
-	{
-		if (node is MeshInstance3D meshInstance)
-		{
-			// 1. Check Material Override
-			if (meshInstance.MaterialOverride is StandardMaterial3D overrideMat && overrideMat.AlbedoTexture != null)
-			{
-				return overrideMat.AlbedoTexture;
-			}
 
-			// 2. Check Surface Material Overrides
-			for (int i = 0; i < meshInstance.GetSurfaceOverrideMaterialCount(); i++)
-			{
-				if (meshInstance.GetSurfaceOverrideMaterial(i) is StandardMaterial3D surfMat && surfMat.AlbedoTexture != null)
-				{
-					return surfMat.AlbedoTexture;
-				}
-			}
-
-			// 3. Check Base Mesh Material
-			if (meshInstance.Mesh != null)
-			{
-				for (int i = 0; i < meshInstance.Mesh.GetSurfaceCount(); i++)
-				{
-					if (meshInstance.Mesh.SurfaceGetMaterial(i) is StandardMaterial3D meshMat && meshMat.AlbedoTexture != null)
-					{
-						return meshMat.AlbedoTexture;
-					}
-				}
-			}
-		}
-
-		// Search children recursively
-		foreach (Node child in node.GetChildren())
-		{
-			Texture2D tex = FindTextureInNode(child);
-			if (tex != null) return tex;
-		}
-
-		return null;
-	}
 
 }

@@ -2,7 +2,7 @@ using Godot;
 using System;
 
 [Tool]
-public partial class TileItemUi : PanelContainer
+public partial class TileItemUi : Button
 {
 
 	[Export]
@@ -11,24 +11,38 @@ public partial class TileItemUi : PanelContainer
 	[Export]
 	public Label TileNameLabel;
 
-	[Export]
-	public CheckBox TileSelectCheckBox;
 
 	public System.Action OnSelected;
 
+	public override void _Ready()
+	{
+		ToggleMode = true; // Enable toggle mode for the button
+		Pressed += HandlePressed; // Connect the Pressed signal to the handler
+
+		FocusMode = FocusModeEnum.None; // Disable focus for the button to prevent unwanted focus behavior
+	}
+
     public void Setup(string title, Texture2D icon, ButtonGroup group, bool isSelected)
     {
-        TileNameLabel.Text = title;
-        TileSelectCheckBox.ButtonGroup = group;
-        TileSelectCheckBox.ButtonPressed = isSelected;
+        
+
+		if (TileNameLabel != null)
+		{
+			TileNameLabel.Text = title;
+		}
 
         if (icon != null)
         {
             IconTextureRect.Texture = icon;
         }
 
-        // Trigger selection callback when pressed
-        TileSelectCheckBox.Pressed += () => OnSelected?.Invoke();
+        ButtonGroup = group;
+		ButtonPressed = isSelected; // Set the initial selection state of the button
     }
-}
+
+	private void HandlePressed()
+	{
+		OnSelected?.Invoke(); // Invoke the OnSelected action if it's not null
+	}
+}	
 

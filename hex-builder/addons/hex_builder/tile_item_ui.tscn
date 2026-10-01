@@ -2,34 +2,83 @@
 
 [ext_resource type="Script" uid="uid://ddd8es7bm6qx0" path="res://addons/hex_builder/TileItemUi.cs" id="1_fdx2m"]
 
-[node name="TileItemUi" type="PanelContainer" unique_id=51610290 node_paths=PackedStringArray("IconTextureRect", "TileNameLabel", "TileSelectCheckBox")]
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_v5842"]
+bg_color = Color(0.16862746, 0.18039216, 0.21960784, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.63784313, 0.6378432, 0.63784295, 1)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_5o8m3"]
+bg_color = Color(0.12941177, 0.2627451, 0.43137255, 1)
+border_width_left = 4
+border_width_top = 4
+border_width_right = 4
+border_width_bottom = 4
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_xpfkc"]
+bg_color = Color(0.21176471, 0.22745098, 0.2784314, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.32156864, 0.5803922, 0.8862745, 1)
+
+[node name="TileItemUi" type="Button" unique_id=597626149 node_paths=PackedStringArray("IconTextureRect", "TileNameLabel")]
 custom_minimum_size = Vector2(150, 50)
-anchors_preset = 5
-anchor_left = 0.5
-anchor_right = 0.5
-offset_left = -75.0
-offset_right = 75.0
-offset_bottom = 50.0
+anchors_preset = 10
+anchor_right = 1.0
+offset_left = 225.0
+offset_right = -279.0
+offset_bottom = 109.0
 grow_horizontal = 2
 size_flags_horizontal = 3
+size_flags_vertical = 4
+focus_mode = 0
+theme_override_styles/normal = SubResource("StyleBoxFlat_v5842")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_5o8m3")
+theme_override_styles/hover = SubResource("StyleBoxFlat_xpfkc")
+toggle_mode = true
+icon_alignment = 1
+expand_icon = true
 script = ExtResource("1_fdx2m")
-IconTextureRect = NodePath("HBoxContainer/TextureRect")
-TileNameLabel = NodePath("HBoxContainer/Label")
-TileSelectCheckBox = NodePath("HBoxContainer/CheckBox")
+IconTextureRect = NodePath("MarginContainer/HBoxContainer/TextureRect")
+TileNameLabel = NodePath("MarginContainer/HBoxContainer/Label")
 
-[node name="HBoxContainer" type="HBoxContainer" parent="." unique_id=444201555]
+[node name="MarginContainer" type="MarginContainer" parent="." unique_id=1175003202]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 25
+theme_override_constants/margin_top = 5
+theme_override_constants/margin_right = 15
+theme_override_constants/margin_bottom = 5
+
+[node name="HBoxContainer" type="HBoxContainer" parent="MarginContainer" unique_id=444201555]
 custom_minimum_size = Vector2(150, 50)
 layout_mode = 2
+theme_override_constants/separation = 10
 alignment = 1
 
-[node name="CheckBox" type="CheckBox" parent="HBoxContainer" unique_id=865408039]
-layout_mode = 2
-
-[node name="TextureRect" type="TextureRect" parent="HBoxContainer" unique_id=29164870]
+[node name="TextureRect" type="TextureRect" parent="MarginContainer/HBoxContainer" unique_id=29164870]
 custom_minimum_size = Vector2(50, 50)
 layout_mode = 2
+size_flags_horizontal = 0
+size_flags_vertical = 4
+expand_mode = 5
+stretch_mode = 5
 
-[node name="Label" type="Label" parent="HBoxContainer" unique_id=210440915]
+[node name="Label" type="Label" parent="MarginContainer/HBoxContainer" unique_id=210440915]
 layout_mode = 2
-text = "text"
+size_flags_horizontal = 3
+text = "t"
 vertical_alignment = 1
+text_overrun_behavior = 3

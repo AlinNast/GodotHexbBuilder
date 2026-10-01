@@ -1,0 +1,20 @@
+[gd_scene format=3 uid="uid://wa4q2xkwknhy"]
+
+[ext_resource type="Script" uid="uid://fqrry6y3moon" path="res://tiles/scripts/HexTileGreen.cs" id="1_tc1hv"]
+[ext_resource type="Texture2D" uid="uid://2rdvpup1e7oq" path="res://tiles/demo/hex_tile_green.png" id="2_gmnqy"]
+[ext_resource type="PackedScene" uid="uid://b3ox1e1s8t4gn" path="res://tiles/BaseHex.glb" id="3_uxaur"]
+[ext_resource type="Material" uid="uid://cyps624ts5oqq" path="res://tiles/materials/red.tres" id="4_tc1hv"]
+
+[sub_resource type="SphereMesh" id="SphereMesh_ab7ba"]
+material = ExtResource("4_tc1hv")
+
+[node name="HexTileGreen" type="Node3D" unique_id=1542725830]
+script = ExtResource("1_tc1hv")
+tileIcon = ExtResource("2_gmnqy")
+tileName = "Green Tile"
+
+[node name="BaseHex" parent="." unique_id=775923034 instance=ExtResource("3_uxaur")]
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="." unique_id=1441756103]
+transform = Transform3D(1.4557135, 0, 0, 0, 1, 0, 0, 0, 1.5040306, 0, 0, 0)
+mesh = SubResource("SphereMesh_ab7ba")

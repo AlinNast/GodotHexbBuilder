@@ -3,33 +3,25 @@
 [ext_resource type="Script" uid="uid://brhqxsybxdlob" path="res://addons/hex_builder/HexBuilderUi.cs" id="1_m4e8m"]
 [ext_resource type="PackedScene" uid="uid://bvgy3e2ysif1" path="res://addons/hex_builder/tile_item_ui.tscn" id="2_v5842"]
 
-[node name="HexBuilderUi" type="Control" unique_id=476009712 node_paths=PackedStringArray("testButton", "gridLengthSpinBox", "gridHeightSpinBox", "generateGridButton", "resetButton", "tileButtonContainer", "GeneratorContainer", "TilePickerContainer")]
+[node name="HexBuilderUi" type="Control" unique_id=476009712 node_paths=PackedStringArray("testButton", "gridLengthSpinBox", "gridHeightSpinBox", "generateGridButton", "resetButton", "confirmButton", "tileButtonContainer", "GeneratorContainer", "TilePickerContainer")]
 layout_mode = 3
 anchors_preset = 10
 anchor_right = 1.0
 grow_horizontal = 2
 script = ExtResource("1_m4e8m")
-testButton = NodePath("Button")
+testButton = NodePath("")
 gridLengthSpinBox = NodePath("GeneratorVBox/HBoxContainer/SpinBox")
 gridHeightSpinBox = NodePath("GeneratorVBox/HBoxContainer/SpinBox2")
 generateGridButton = NodePath("GeneratorVBox/GenerateMapButton")
 resetButton = NodePath("PainterVBox/HBoxContainer/ResetMap")
+confirmButton = NodePath("PainterVBox/HBoxContainer/Confirm")
 tileButtonContainer = NodePath("PainterVBox/MarginContainer/ScrollContainer/VBoxContainer")
 GeneratorContainer = NodePath("GeneratorVBox")
 TilePickerContainer = NodePath("PainterVBox")
 paletteItemPrefab = ExtResource("2_v5842")
 
-[node name="Button" type="Button" parent="." unique_id=1008749424]
-layout_mode = 1
-anchors_preset = -1
-anchor_bottom = 0.29500002
-offset_left = 137.0
-offset_top = 314.0
-offset_right = 235.0
-offset_bottom = 157.84
-text = "Test button"
-
 [node name="GeneratorVBox" type="VBoxContainer" parent="." unique_id=1672856038]
+visible = false
 layout_mode = 1
 anchors_preset = 10
 anchor_right = 1.0
@@ -76,7 +68,6 @@ layout_direction = 2
 text = "Generate Map"
 
 [node name="PainterVBox" type="VBoxContainer" parent="." unique_id=1226973275]
-visible = false
 layout_mode = 1
 anchors_preset = 10
 anchor_right = 1.0
@@ -84,6 +75,10 @@ offset_bottom = 149.0
 grow_horizontal = 2
 theme_override_constants/separation = 25
 alignment = 1
+
+[node name="Label" type="Label" parent="PainterVBox" unique_id=1019226476]
+layout_mode = 2
+text = "Select the tile to paint with:"
 
 [node name="MarginContainer" type="MarginContainer" parent="PainterVBox" unique_id=116865652]
 layout_mode = 2
@@ -99,6 +94,7 @@ horizontal_scroll_mode = 0
 
 [node name="VBoxContainer" type="VBoxContainer" parent="PainterVBox/MarginContainer/ScrollContainer" unique_id=983467410]
 layout_mode = 2
+theme_override_constants/separation = 10
 
 [node name="HBoxContainer" type="HBoxContainer" parent="PainterVBox" unique_id=1987925507]
 layout_mode = 2

@@ -22,6 +22,10 @@ public partial class HexBuilder : EditorPlugin
 	public int gridHeight = 5;
 	// TODO make this customazible
 
+	/// <summary>
+	/// Ensures that Process doesent run before initialization
+	/// </summary>
+	public bool init = false;
 	
 	/// ////// Private variables for the tool's internal state
 	
@@ -30,10 +34,6 @@ public partial class HexBuilder : EditorPlugin
 	/// </summary>
 	int hex_size = 1; // Size of the hexagon tiles
 	
-	/// <summary>
-	/// Ensures that Process doesent run before initialization
-	/// </summary>
-	bool init = false;
 
     /// <summary>
 	/// Stores the Hexes as value and they are accessible by their grid position as key. 
