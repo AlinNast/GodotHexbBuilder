@@ -21,6 +21,12 @@ public partial class HexBuilderUi : Control
 	Button resetButton;
 	[Export]
 	VBoxContainer tileButtonContainer;
+	[Export]
+	VBoxContainer GeneratorContainer;
+	[Export]
+	VBoxContainer TilePickerContainer;
+	[Export]
+	PackedScene paletteItemPrefab; // Drag tile_item_UI.tscn here in Inspector
 
 
 	private string hexTileFolderPath = "res://tiles/demo";
@@ -31,9 +37,10 @@ public partial class HexBuilderUi : Control
 
 	////////////////       Tool UI Life Cycle
 	public override void _EnterTree(){
+		GeneratorContainer.Visible = true; // Show the generator container when the tool becomes active
+		TilePickerContainer.Visible = false; // Hide the tile picker container when the tool becomes active
 		resetButton.Pressed += StopTool; // add event to Pressed test button
 		generateGridButton.Pressed += GenerateGrid; // add event to Pressed generate grid button
-		resetButton.Visible = false; // Hide the reset button initially
 		testButton.Pressed += testButtonPressed; // add event to Pressed test button
 	}
 
@@ -45,8 +52,8 @@ public partial class HexBuilderUi : Control
 		int length = (int)gridLengthSpinBox.Value;
 		int height = (int)gridHeightSpinBox.Value;
 		hexBuilder.SetGridSize(length, height);
-		generateGridButton.GetParent<Control>().Visible = false; // Hide the generate grid button after generating the grid
-		resetButton.Visible = true; // Hide the reset button initially
+		GeneratorContainer.Visible = false; // hide the generator container after generating the grid
+		TilePickerContainer.Visible = true; // Show the tile picker container after generating the grid
 		PopulateTilePickerUI(); // Populate the tile picker UI with available hex tile scenes
 		hexBuilder.Init();  // Initializes the functionality of the tool
 	}
@@ -57,16 +64,30 @@ public partial class HexBuilderUi : Control
             child.QueueFree();
         }
         hexTileScenes.Clear();
-		resetButton.Visible = false;
-		generateGridButton.GetParent<Control>().Visible = true;
+		TilePickerContainer.Visible = false;
+		GeneratorContainer.Visible = true;
 		hexBuilder.StopTool();  // Stops the functionality of the tool
 	}
 
 	public void PopulateTilePickerUI()
 	{
+		// Check if the paletteItemPrefab and tileButtonContainer are assigned
+		if (paletteItemPrefab == null)
+		{
+			GD.PrintErr("Palette item prefab is not assigned in the inspector.");
+			return;
+		}
+
+		if (tileButtonContainer == null)
+		{
+			GD.PrintErr("tileButtonContainer is not assigned in the inspector.");
+			return;
+		}
+
 		// Clear existing UI buttons and previous scene map
         foreach (Node child in tileButtonContainer.GetChildren())
         {
+			tileButtonContainer.RemoveChild(child);
             child.QueueFree();
         }
         hexTileScenes.Clear();
@@ -87,12 +108,15 @@ public partial class HexBuilderUi : Control
 			ButtonGroup tileButtonGroup = new ButtonGroup();
 			bool isFirstButton = true;
 			
+			// loop through all files in the directory
 			while (fileName != "")
 			{
-				if (fileName.EndsWith(".tscn"))
+				// Ignore directories, hidden files, and Godot remap files
+        		if (!dir.CurrentIsDir() && fileName.EndsWith(".tscn") && !fileName.StartsWith("."))	
 				{
 					string scenePath = $"{hexTileFolderPath}/{fileName}";
 					PackedScene tileScene = GD.Load<PackedScene>(scenePath);
+
 					if (tileScene != null)
 					{
 						// Store the scene in the dictionary
@@ -102,14 +126,15 @@ public partial class HexBuilderUi : Control
 						string cleanName = fileName.Replace(".tscn", "").Replace("_", " ");
 						cleanName = System.Globalization.CultureInfo.CurrentCulture.TextInfo.ToTitleCase(cleanName);
 
-						// Create a CheckBox with radio button behavior
-						CheckBox tileButton = new CheckBox();
-						tileButton.Text = cleanName;
-						tileButton.ButtonGroup = tileButtonGroup;
+						Texture2D tileIcon = ExtractTextureFromTile(tileScene);
+						// Create a new TileItemUi instance for the tile
+						TileItemUi tileButton = paletteItemPrefab.Instantiate<TileItemUi>();
+						tileButtonContainer.AddChild(tileButton);
 
 						// Capture local reference for delegate callback
 						PackedScene currentScene = tileScene;
-						tileButton.Pressed += () => SetTileToPaint(currentScene);
+						tileButton.Setup(cleanName, tileIcon, tileButtonGroup, isFirstButton);
+						tileButton.OnSelected += () => SetTileToPaint(currentScene);
 
 						// Auto-select the first tile found in the directory as default
 						if (isFirstButton)
@@ -118,7 +143,6 @@ public partial class HexBuilderUi : Control
 							isFirstButton = false;
 						}
 
-						tileButtonContainer.AddChild(tileButton);
 					}
 					else
 					{
@@ -141,4 +165,62 @@ public partial class HexBuilderUi : Control
 	public void testButtonPressed(){
 		hexBuilder.toolActive = !hexBuilder.toolActive; // Toggle the toolActive state
 	}
+
+	private Texture2D ExtractTextureFromTile(PackedScene tileScene)
+	{
+		Node tempNode = tileScene.Instantiate();
+		Texture2D foundTexture = null;
+
+		if (tempNode is Node3D node3D)
+		{
+			// Recursively search for any MeshInstance3D in the tile hierarchy
+			foundTexture = FindTextureInNode(node3D);
+		}
+
+		tempNode.Free();
+		return foundTexture;
+	}
+
+	private Texture2D FindTextureInNode(Node node)
+	{
+		if (node is MeshInstance3D meshInstance)
+		{
+			// 1. Check Material Override
+			if (meshInstance.MaterialOverride is StandardMaterial3D overrideMat && overrideMat.AlbedoTexture != null)
+			{
+				return overrideMat.AlbedoTexture;
+			}
+
+			// 2. Check Surface Material Overrides
+			for (int i = 0; i < meshInstance.GetSurfaceOverrideMaterialCount(); i++)
+			{
+				if (meshInstance.GetSurfaceOverrideMaterial(i) is StandardMaterial3D surfMat && surfMat.AlbedoTexture != null)
+				{
+					return surfMat.AlbedoTexture;
+				}
+			}
+
+			// 3. Check Base Mesh Material
+			if (meshInstance.Mesh != null)
+			{
+				for (int i = 0; i < meshInstance.Mesh.GetSurfaceCount(); i++)
+				{
+					if (meshInstance.Mesh.SurfaceGetMaterial(i) is StandardMaterial3D meshMat && meshMat.AlbedoTexture != null)
+					{
+						return meshMat.AlbedoTexture;
+					}
+				}
+			}
+		}
+
+		// Search children recursively
+		foreach (Node child in node.GetChildren())
+		{
+			Texture2D tex = FindTextureInNode(child);
+			if (tex != null) return tex;
+		}
+
+		return null;
+	}
+
 }

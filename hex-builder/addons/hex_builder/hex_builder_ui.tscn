@@ -1,21 +1,23 @@
 [gd_scene format=3 uid="uid://cdtce5jrgfynw"]
 
 [ext_resource type="Script" uid="uid://brhqxsybxdlob" path="res://addons/hex_builder/HexBuilderUi.cs" id="1_m4e8m"]
+[ext_resource type="PackedScene" uid="uid://bvgy3e2ysif1" path="res://addons/hex_builder/tile_item_ui.tscn" id="2_v5842"]
 
-[node name="HexBuilderUi" type="Control" unique_id=476009712 node_paths=PackedStringArray("testButton", "gridLengthSpinBox", "gridHeightSpinBox", "generateGridButton", "resetButton", "tileButtonContainer")]
+[node name="HexBuilderUi" type="Control" unique_id=476009712 node_paths=PackedStringArray("testButton", "gridLengthSpinBox", "gridHeightSpinBox", "generateGridButton", "resetButton", "tileButtonContainer", "GeneratorContainer", "TilePickerContainer")]
 layout_mode = 3
-anchor_right = 0.45800003
-anchor_bottom = 1.0
-offset_right = 0.38397217
+anchors_preset = 10
+anchor_right = 1.0
 grow_horizontal = 2
-grow_vertical = 2
 script = ExtResource("1_m4e8m")
 testButton = NodePath("Button")
-gridLengthSpinBox = NodePath("VBoxContainer/HBoxContainer/SpinBox")
-gridHeightSpinBox = NodePath("VBoxContainer/HBoxContainer/SpinBox2")
-generateGridButton = NodePath("VBoxContainer/GenerateMapButton")
-resetButton = NodePath("ResetMap")
-tileButtonContainer = NodePath("VBoxContainer2")
+gridLengthSpinBox = NodePath("GeneratorVBox/HBoxContainer/SpinBox")
+gridHeightSpinBox = NodePath("GeneratorVBox/HBoxContainer/SpinBox2")
+generateGridButton = NodePath("GeneratorVBox/GenerateMapButton")
+resetButton = NodePath("PainterVBox/HBoxContainer/ResetMap")
+tileButtonContainer = NodePath("PainterVBox/MarginContainer/ScrollContainer/VBoxContainer")
+GeneratorContainer = NodePath("GeneratorVBox")
+TilePickerContainer = NodePath("PainterVBox")
+paletteItemPrefab = ExtResource("2_v5842")
 
 [node name="Button" type="Button" parent="." unique_id=1008749424]
 layout_mode = 1
@@ -27,40 +29,26 @@ offset_right = 235.0
 offset_bottom = 157.84
 text = "Test button"
 
-[node name="ResetMap" type="Button" parent="." unique_id=1579223249]
-visible = false
+[node name="GeneratorVBox" type="VBoxContainer" parent="." unique_id=1672856038]
 layout_mode = 1
-anchors_preset = -1
-anchor_bottom = 0.108
-offset_left = 10.0
-offset_top = 314.0
-offset_right = 118.0
-offset_bottom = 279.016
-text = "Reset button"
-
-[node name="VBoxContainer" type="VBoxContainer" parent="." unique_id=1672856038]
-layout_mode = 1
-anchors_preset = -1
-anchor_right = 0.003
-anchor_bottom = 0.106000006
-offset_left = 3.0
-offset_top = 3.0
-offset_right = 507.538
-offset_bottom = 0.31199646
+anchors_preset = 10
+anchor_right = 1.0
+offset_bottom = 117.0
 grow_horizontal = 2
-grow_vertical = 2
 alignment = 1
 
-[node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer" unique_id=595876029]
+[node name="Label" type="Label" parent="GeneratorVBox" unique_id=922175632]
+layout_mode = 2
+text = "Lenght and Height of the map:"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="HBoxContainer" type="HBoxContainer" parent="GeneratorVBox" unique_id=595876029]
 layout_mode = 2
 size_flags_stretch_ratio = 0.8
 alignment = 1
 
-[node name="Label" type="Label" parent="VBoxContainer/HBoxContainer" unique_id=922175632]
-layout_mode = 2
-text = "Lenght and Height of the map:"
-
-[node name="SpinBox" type="SpinBox" parent="VBoxContainer/HBoxContainer" unique_id=272495174]
+[node name="SpinBox" type="SpinBox" parent="GeneratorVBox/HBoxContainer" unique_id=272495174]
 custom_minimum_size = Vector2(120, 0)
 layout_mode = 2
 offset_transform_enabled = true
@@ -70,7 +58,7 @@ value = 6.0
 rounded = true
 prefix = "Lenght"
 
-[node name="SpinBox2" type="SpinBox" parent="VBoxContainer/HBoxContainer" unique_id=395342612]
+[node name="SpinBox2" type="SpinBox" parent="GeneratorVBox/HBoxContainer" unique_id=395342612]
 custom_minimum_size = Vector2(120, 0)
 layout_mode = 2
 offset_transform_position_ratio = Vector2(1.23, 0)
@@ -80,15 +68,55 @@ value = 6.0
 rounded = true
 prefix = "Heigth"
 
-[node name="GenerateMapButton" type="Button" parent="VBoxContainer" unique_id=531911255]
+[node name="GenerateMapButton" type="Button" parent="GeneratorVBox" unique_id=531911255]
 layout_mode = 2
-size_flags_horizontal = 8
+size_flags_horizontal = 4
+size_flags_vertical = 8
 layout_direction = 2
 text = "Generate Map"
 
-[node name="VBoxContainer2" type="VBoxContainer" parent="." unique_id=1226973275]
-layout_mode = 0
-offset_left = 1.0
-offset_top = 93.0
-offset_right = 511.0
-offset_bottom = 239.0
+[node name="PainterVBox" type="VBoxContainer" parent="." unique_id=1226973275]
+visible = false
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_bottom = 149.0
+grow_horizontal = 2
+theme_override_constants/separation = 25
+alignment = 1
+
+[node name="MarginContainer" type="MarginContainer" parent="PainterVBox" unique_id=116865652]
+layout_mode = 2
+theme_override_constants/margin_left = 50
+theme_override_constants/margin_top = 25
+theme_override_constants/margin_right = 50
+theme_override_constants/margin_bottom = 25
+
+[node name="ScrollContainer" type="ScrollContainer" parent="PainterVBox/MarginContainer" unique_id=1391426796]
+custom_minimum_size = Vector2(170, 200)
+layout_mode = 2
+horizontal_scroll_mode = 0
+
+[node name="VBoxContainer" type="VBoxContainer" parent="PainterVBox/MarginContainer/ScrollContainer" unique_id=983467410]
+layout_mode = 2
+
+[node name="HBoxContainer" type="HBoxContainer" parent="PainterVBox" unique_id=1987925507]
+layout_mode = 2
+size_flags_vertical = 10
+theme_override_constants/separation = 50
+alignment = 1
+
+[node name="ResetMap" type="Button" parent="PainterVBox/HBoxContainer" unique_id=1579223249]
+custom_maximum_size = Vector2(-1, 50)
+layout_mode = 2
+size_flags_horizontal = 4
+text = "Reset button"
+
+[node name="Confirm" type="Button" parent="PainterVBox/HBoxContainer" unique_id=1583308515]
+custom_maximum_size = Vector2(-1, 50)
+layout_mode = 2
+size_flags_horizontal = 4
+text = "Confirm
+"
+alignment = 2
+autowrap_trim_flags = 0

@@ -264,9 +264,8 @@ public partial class HexBuilder : EditorPlugin
 	{
 		if (hoveredTilePosition.HasValue)
 		{
-			GD.Print($"Hovered Tile Position: {hoveredTilePosition.Value}");
 			// Slightly lift outline (Y + 0.05f) to avoid z-fighting with the tile mesh
-			Vector3 center = hoveredTilePosition.Value + new Vector3(0, 10f, 0);
+			Vector3 center = hoveredTilePosition.Value + new Vector3(0, 0.2f, 0);
 
 			// Get 6 corner positions for unit hex_size
 			Vector3[] corners = GetHexCorners(center, hex_size);

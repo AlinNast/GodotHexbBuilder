@@ -1,0 +1,35 @@
+[gd_scene format=3 uid="uid://bvgy3e2ysif1"]
+
+[ext_resource type="Script" uid="uid://ddd8es7bm6qx0" path="res://addons/hex_builder/TileItemUi.cs" id="1_fdx2m"]
+
+[node name="TileItemUi" type="PanelContainer" unique_id=51610290 node_paths=PackedStringArray("IconTextureRect", "TileNameLabel", "TileSelectCheckBox")]
+custom_minimum_size = Vector2(150, 50)
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -75.0
+offset_right = 75.0
+offset_bottom = 50.0
+grow_horizontal = 2
+size_flags_horizontal = 3
+script = ExtResource("1_fdx2m")
+IconTextureRect = NodePath("HBoxContainer/TextureRect")
+TileNameLabel = NodePath("HBoxContainer/Label")
+TileSelectCheckBox = NodePath("HBoxContainer/CheckBox")
+
+[node name="HBoxContainer" type="HBoxContainer" parent="." unique_id=444201555]
+custom_minimum_size = Vector2(150, 50)
+layout_mode = 2
+alignment = 1
+
+[node name="CheckBox" type="CheckBox" parent="HBoxContainer" unique_id=865408039]
+layout_mode = 2
+
+[node name="TextureRect" type="TextureRect" parent="HBoxContainer" unique_id=29164870]
+custom_minimum_size = Vector2(50, 50)
+layout_mode = 2
+
+[node name="Label" type="Label" parent="HBoxContainer" unique_id=210440915]
+layout_mode = 2
+text = "text"
+vertical_alignment = 1
