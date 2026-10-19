@@ -46,6 +46,7 @@ layout_mode = 2
 size_flags_horizontal = 4
 size_flags_vertical = 8
 layout_direction = 2
+tooltip_text = "Initializes the tool and starts the phase of map generation"
 text = "Initialize"
 
 [node name="ConfirmationDialog" type="ConfirmationDialog" parent="." unique_id=1952030823]
@@ -58,7 +59,6 @@ dialog_text = "Warning, initializing the hex builder tool will remove everything
 Proceed?"
 
 [node name="GeneratorVBox" type="VBoxContainer" parent="." unique_id=1672856038]
-visible = false
 layout_mode = 1
 anchors_preset = 10
 anchor_right = 1.0
@@ -130,6 +130,7 @@ layout_mode = 2
 size_flags_horizontal = 4
 size_flags_vertical = 8
 layout_direction = 2
+tooltip_text = "Sets the current map size and proceeds to the next stage of map painting, Tile outside the initial grid can be painted in the next stege for custom sizes"
 text = "Confirm Map"
 
 [node name="CancelButton" type="Button" parent="GeneratorVBox/VBoxContainer/HBoxContainer2" unique_id=2063954715]
@@ -137,10 +138,12 @@ layout_mode = 2
 size_flags_horizontal = 4
 size_flags_vertical = 8
 layout_direction = 2
+tooltip_text = "Delets the current tiles and deactivates the tool"
 theme_override_constants/h_separation = 15
 text = "Cancel"
 
 [node name="PainterVBox" type="VBoxContainer" parent="." unique_id=1226973275]
+visible = false
 layout_mode = 1
 anchors_preset = 10
 anchor_right = 1.0
