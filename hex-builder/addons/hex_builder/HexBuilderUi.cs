@@ -29,6 +29,15 @@ public partial class HexBuilderUi : Control
 	[Export]
 	Button generateGridButton;
 
+
+	///////////////  PAINT STATE
+	[Export]
+	LineEdit tileFolderLineEdit;
+	[Export]
+	Button tileFolderBrowseButton;
+
+
+
 	// UI needs to be Manually referenced
 	[Export]
 	Button testButton;
@@ -46,7 +55,7 @@ public partial class HexBuilderUi : Control
 	PackedScene paletteItemPrefab; // Drag tile_item_UI.tscn here in Inspector
 
 
-	private string hexTileFolderPath = "res://tiles/demo";
+	private string hexTileFolderPath = "res://addons/hex_builder/tiles";
 
 	private Dictionary<string, PackedScene> hexTileScenes = new Dictionary<string, PackedScene>();
 	public PackedScene selectedTileScene;
@@ -72,6 +81,17 @@ public partial class HexBuilderUi : Control
 		gridLengthSpinBox.ValueChanged += OnGridSizeChanged;
 		gridHeightSpinBox.ValueChanged += OnGridSizeChanged;
 		gridScaleSpinBox.ValueChanged += OnGridSizeChanged;
+
+		if (tileFolderLineEdit != null)
+		{
+			tileFolderLineEdit.Text = hexTileFolderPath;
+		}
+
+		// --- NEW: Connect the browse button to trigger path parsing ---
+		if (tileFolderBrowseButton != null)
+		{
+			tileFolderBrowseButton.Pressed += OnBrowseButtonPressed;
+		}
 	}
 
 	public override void _ExitTree(){
@@ -158,6 +178,36 @@ public partial class HexBuilderUi : Control
 	}
 
 
+	////////////// Paint State UI Functions
+	
+	private void OnBrowseButtonPressed()
+	{
+		string newPath = tileFolderLineEdit.Text;
+
+		// Basic validation to ensure Godot directory path formatting
+		string trimmedPath = newPath.Trim();
+		if (!trimmedPath.StartsWith("res://"))
+		{
+			GD.PrintErr("Invalid path. Folder path must start with 'res://'");
+			// Reset text back to current valid path
+			tileFolderLineEdit.Text = hexTileFolderPath;
+			return;
+		}
+
+		// Check if the directory actually exists
+		if (!DirAccess.DirExistsAbsolute(trimmedPath))
+		{
+			GD.PrintErr($"Directory does not exist: {trimmedPath}");
+			tileFolderLineEdit.Text = hexTileFolderPath;
+			return;
+		}
+
+		// Update path and repopulate the scroll container UI with the new tiles
+		hexTileFolderPath = trimmedPath;
+		PopulateTilePickerUI();
+		GD.Print($"Tile folder updated to: {hexTileFolderPath}");
+	} 
+
 	public void PopulateTilePickerUI()
 	{
 		// Check if the paletteItemPrefab and tileButtonContainer are assigned
@@ -210,42 +260,29 @@ public partial class HexBuilderUi : Control
 					// Store the scene in the dictionary
 					hexTileScenes[fileName] = tileScene;
 
-					// Format clean name for UI (e.g. "grass_hex.tscn" -> "Grass Hex")
-					string cleanName = fileName.Replace(".tscn", "").Replace("_", " ");
-					cleanName = System.Globalization.CultureInfo.CurrentCulture.TextInfo.ToTitleCase(cleanName);
+					// Use actual scene filename (without .tscn extension)
+					string sceneName = fileName.Replace(".tscn", "");
 
-					// Load icon matching the scene filename (e.g. hex_tile_base.png)
-                    string pngPath = $"{hexTileFolderPath}/{fileName.Replace(".tscn", ".png")}";
-                    Texture2D tileIcon = null;
-                    if (FileAccess.FileExists(pngPath))
-                    {
-                        tileIcon = GD.Load<Texture2D>(pngPath);
-                    }
-
-					// Create a new TileItemUi instance for the tile
 					TileItemUi tileButton = paletteItemPrefab.Instantiate<TileItemUi>();
 					tileButtonContainer.AddChild(tileButton);
 
-					// Capture local reference for delegate callback
 					PackedScene currentScene = tileScene;
 
-					
-					tileButton.Setup(cleanName, tileIcon, tileButtonGroup, isFirstButton);
+					// Setup button using the actual filename and group
+					tileButton.Setup(sceneName, tileButtonGroup, isFirstButton);
 					tileButton.OnSelected += () => SetTileToPaint(currentScene);
 
-					// Auto-select the first tile found in the directory as default
 					if (isFirstButton)
 					{
 						SetTileToPaint(currentScene);
 						isFirstButton = false;
 					}
-
-					}
-					else
-					{
-						GD.PrintErr($"Failed to load scene: {scenePath}");
-					}
 				}
+				else
+				{
+					GD.PrintErr($"Failed to load scene: {scenePath}");
+				}
+			}
 			fileName = dir.GetNext();
 		}
 		dir.ListDirEnd();
@@ -264,9 +301,11 @@ public partial class HexBuilderUi : Control
 		//hexTileScenes.Clear();
 		hexBuilder.toolActive = false;
 		hexBuilder.init = false; // Stops the functionality of the tool
+		hexBuilder.isPainitngEnabled = false; // Disable painting mode
 		
 		TilePickerContainer.Visible = false;
-		GeneratorContainer.Visible = true;
+		GeneratorContainer.Visible = false;
+		ReadyContainer.Visible = true;
 	}
 	
 

@@ -1,80 +1,120 @@
 [gd_scene format=3 uid="uid://dljngl6kuepyo"]
 
-[ext_resource type="PackedScene" uid="uid://0jhhuo114jgx" path="res://tiles/demo/hex_tile_base.tscn" id="1_gvxdb"]
-[ext_resource type="Script" uid="uid://buaqgyt6rgmq1" path="res://tiles/scripts/HexTileBase.cs" id="2_87p64"]
-[ext_resource type="Texture2D" uid="uid://u0sdouua64wd" path="res://tiles/demo/hex_tile_base.png" id="3_rj2uh"]
+[ext_resource type="PackedScene" uid="uid://0jhhuo114jgx" path="res://addons/hex_builder/tiles/hex_tile_base.tscn" id="1_gvxdb"]
+[ext_resource type="PackedScene" uid="uid://wa4q2xkwknhy" path="res://tiles/demo/hex_tile_red.tscn" id="2_87p64"]
+[ext_resource type="Script" uid="uid://fqrry6y3moon" path="res://tiles/scripts/HexTileGreen.cs" id="3_rj2uh"]
+[ext_resource type="PackedScene" uid="uid://ddnu8kbr75qd" path="res://tiles/demo/hex_tile_green.tscn" id="4_krcqe"]
+
+[sub_resource type="Resource" id="Resource_d0egw"]
+metadata/__load_path__ = "res://tiles/demo/hex_tile_green.png"
+
+[sub_resource type="Resource" id="Resource_sonmh"]
+metadata/__load_path__ = "res://tiles/demo/hex_tile_green.png"
 
 [node name="DemoScene" type="Node3D" unique_id=977432507]
 
-[node name="Map" type="Node3D" parent="." unique_id=1012180016]
+[node name="Map" type="Node3D" parent="." unique_id=96919313]
 
 [node name="Hex_0_0" type="Node3D" parent="Map" unique_id=1542725830 instance=ExtResource("1_gvxdb")]
-script = ExtResource("2_87p64")
-tileIcon = ExtResource("3_rj2uh")
-tileName = "Base tile"
 
-[node name="Hex_1_0" type="Node3D" parent="Map" unique_id=1855211050 instance=ExtResource("1_gvxdb")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.7320508, 0, 0)
-script = ExtResource("2_87p64")
-tileIcon = ExtResource("3_rj2uh")
-tileName = "Base tile"
+[node name="Hex_1_0" type="Node3D" parent="Map" unique_id=1774967847 instance=ExtResource("1_gvxdb")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.9052559, 0, 0)
 
-[node name="Hex_2_0" type="Node3D" parent="Map" unique_id=1543499084 instance=ExtResource("1_gvxdb")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.4641016, 0, 0)
-script = ExtResource("2_87p64")
-tileIcon = ExtResource("3_rj2uh")
-tileName = "Base tile"
+[node name="Hex_2_0" type="Node3D" parent="Map" unique_id=306299929 instance=ExtResource("1_gvxdb")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.8105118, 0, 0)
 
-[node name="Hex_3_0" type="Node3D" parent="Map" unique_id=540374059 instance=ExtResource("1_gvxdb")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.196152, 0, 0)
-script = ExtResource("2_87p64")
-tileIcon = ExtResource("3_rj2uh")
-tileName = "Base tile"
+[node name="Hex_3_0" type="Node3D" parent="Map" unique_id=262296577 instance=ExtResource("1_gvxdb")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.715768, 0, 0)
 
-[node name="Hex_4_0" type="Node3D" parent="Map" unique_id=2139318340 instance=ExtResource("1_gvxdb")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6.928203, 0, 0)
-script = ExtResource("2_87p64")
-tileIcon = ExtResource("3_rj2uh")
-tileName = "Base tile"
+[node name="Hex_4_0" type="Node3D" parent="Map" unique_id=1134870487 instance=ExtResource("1_gvxdb")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.6210237, 0, 0)
 
-[node name="Hex_5_0" type="Node3D" parent="Map" unique_id=282297117 instance=ExtResource("1_gvxdb")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.660254, 0, 0)
-script = ExtResource("2_87p64")
-tileIcon = ExtResource("3_rj2uh")
-tileName = "Base tile"
+[node name="Hex_0_1" type="Node3D" parent="Map" unique_id=962344686 instance=ExtResource("1_gvxdb")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.95262796, 0, 1.6500001)
 
-[node name="Hex_0_1" type="Node3D" parent="Map" unique_id=369686116 instance=ExtResource("1_gvxdb")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.8660254, 0, 1.5)
-script = ExtResource("2_87p64")
-tileIcon = ExtResource("3_rj2uh")
-tileName = "Base tile"
+[node name="Hex_1_1" type="Node3D" parent="Map" unique_id=115175976 instance=ExtResource("1_gvxdb")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.857884, 0, 1.6500001)
 
-[node name="Hex_1_1" type="Node3D" parent="Map" unique_id=195484779 instance=ExtResource("1_gvxdb")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.598076, 0, 1.5)
-script = ExtResource("2_87p64")
-tileIcon = ExtResource("3_rj2uh")
-tileName = "Base tile"
+[node name="Hex_2_1" type="Node3D" parent="Map" unique_id=297065425 instance=ExtResource("1_gvxdb")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.7631397, 0, 1.6500001)
 
-[node name="Hex_2_1" type="Node3D" parent="Map" unique_id=1453255038 instance=ExtResource("1_gvxdb")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.330127, 0, 1.5)
-script = ExtResource("2_87p64")
-tileIcon = ExtResource("3_rj2uh")
-tileName = "Base tile"
+[node name="Hex_3_1" type="Node3D" parent="Map" unique_id=363602880 instance=ExtResource("1_gvxdb")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6.668396, 0, 1.6500001)
 
-[node name="Hex_3_1" type="Node3D" parent="Map" unique_id=212391416 instance=ExtResource("1_gvxdb")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6.0621777, 0, 1.5)
-script = ExtResource("2_87p64")
-tileIcon = ExtResource("3_rj2uh")
-tileName = "Base tile"
+[node name="Hex_4_1" type="Node3D" parent="Map" unique_id=1676394821 instance=ExtResource("1_gvxdb")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.573651, 0, 1.6500001)
 
-[node name="Hex_4_1" type="Node3D" parent="Map" unique_id=1360516109 instance=ExtResource("1_gvxdb")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.7942286, 0, 1.5)
-script = ExtResource("2_87p64")
-tileIcon = ExtResource("3_rj2uh")
-tileName = "Base tile"
+[node name="Hex_0_2" type="Node3D" parent="Map" unique_id=1690706931 instance=ExtResource("1_gvxdb")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 3.3000002)
 
-[node name="Hex_5_1" type="Node3D" parent="Map" unique_id=756562287 instance=ExtResource("1_gvxdb")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9.5262785, 0, 1.5)
-script = ExtResource("2_87p64")
-tileIcon = ExtResource("3_rj2uh")
-tileName = "Base tile"
+[node name="Hex_1_2" type="Node3D" parent="Map" unique_id=1766832319 instance=ExtResource("1_gvxdb")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.9052559, 0, 3.3000002)
+
+[node name="Hex_3_2" type="Node3D" parent="Map" unique_id=559571771 instance=ExtResource("1_gvxdb")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.715768, 0, 3.3000002)
+
+[node name="Hex_4_2" type="Node3D" parent="Map" unique_id=1181755964 instance=ExtResource("1_gvxdb")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.6210237, 0, 3.3000002)
+
+[node name="Hex_0_3" type="Node3D" parent="Map" unique_id=177468377 instance=ExtResource("1_gvxdb")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.95262796, 0, 4.9500003)
+
+[node name="Hex_1_3" type="Node3D" parent="Map" unique_id=1445872966 instance=ExtResource("1_gvxdb")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.857884, 0, 4.9500003)
+
+[node name="Hex_2_3" type="Node3D" parent="Map" unique_id=777635989 instance=ExtResource("1_gvxdb")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.7631397, 0, 4.9500003)
+
+[node name="Hex_4_3" type="Node3D" parent="Map" unique_id=1974365352 instance=ExtResource("1_gvxdb")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.573651, 0, 4.9500003)
+
+[node name="Hex_0_4" type="Node3D" parent="Map" unique_id=1713899196 instance=ExtResource("1_gvxdb")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 6.6000004)
+
+[node name="Hex_2_4" type="Node3D" parent="Map" unique_id=338435296 instance=ExtResource("1_gvxdb")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.8105118, 0, 6.6000004)
+
+[node name="Hex_3_4" type="Node3D" parent="Map" unique_id=529957768 instance=ExtResource("1_gvxdb")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.715768, 0, 6.6000004)
+
+[node name="Hex_4_4" type="Node3D" parent="Map" unique_id=1848235004 instance=ExtResource("1_gvxdb")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.6210237, 0, 6.6000004)
+
+[node name="Hex_0_5" type="Node3D" parent="Map" unique_id=607414786 instance=ExtResource("1_gvxdb")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.95262796, 0, 8.25)
+
+[node name="Hex_1_5" type="Node3D" parent="Map" unique_id=1645371834 instance=ExtResource("1_gvxdb")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.857884, 0, 8.25)
+
+[node name="Hex_2_5" type="Node3D" parent="Map" unique_id=1494551073 instance=ExtResource("1_gvxdb")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.7631397, 0, 8.25)
+
+[node name="Hex_1_6" type="Node3D" parent="Map" unique_id=2033380540 instance=ExtResource("2_87p64")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.9052559, 0, 6.6000004)
+script = ExtResource("3_rj2uh")
+tileIcon = SubResource("Resource_d0egw")
+tileName = "Green Tile"
+
+[node name="Hex_2_6" type="Node3D" parent="Map" unique_id=861892235 instance=ExtResource("2_87p64")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.8105118, 0, 3.3000002)
+script = ExtResource("3_rj2uh")
+tileIcon = SubResource("Resource_d0egw")
+tileName = "Green Tile"
+
+[node name="Hex_3_6" type="Node3D" parent="Map" unique_id=621264614 instance=ExtResource("4_krcqe")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6.668396, 0, 4.9500003)
+script = ExtResource("3_rj2uh")
+tileIcon = SubResource("Resource_sonmh")
+tileName = "Green Tile"
+
+[node name="Hex_3_7" type="Node3D" parent="Map" unique_id=841828407 instance=ExtResource("4_krcqe")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6.668396, 0, 8.25)
+script = ExtResource("3_rj2uh")
+tileIcon = SubResource("Resource_sonmh")
+tileName = "Green Tile"
+
+[node name="Hex_4_6" type="Node3D" parent="Map" unique_id=2098816303 instance=ExtResource("4_krcqe")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.573651, 0, 8.25)
+script = ExtResource("3_rj2uh")
+tileIcon = SubResource("Resource_sonmh")
+tileName = "Green Tile"

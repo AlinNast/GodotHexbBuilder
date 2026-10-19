@@ -122,7 +122,7 @@ public partial class HexBuilder : EditorPlugin
 		ClearScene();
 
 		// load the default tile
-		tileScene = GD.Load<PackedScene>("res://tiles/demo/hex_tile_base.tscn");
+		tileScene = GD.Load<PackedScene>("res://addons/hex_builder/tiles/hex_tile_base.tscn");
 
 		/// Preview Grid is loaded in the scene
 		ConstructGrid();

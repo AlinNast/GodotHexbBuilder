@@ -3,7 +3,7 @@
 [ext_resource type="Script" uid="uid://brhqxsybxdlob" path="res://addons/hex_builder/HexBuilderUi.cs" id="1_m4e8m"]
 [ext_resource type="PackedScene" uid="uid://bvgy3e2ysif1" path="res://addons/hex_builder/tile_item_ui.tscn" id="2_v5842"]
 
-[node name="HexBuilderUi" type="Control" unique_id=476009712 node_paths=PackedStringArray("InitializeButton", "ReadyContainer", "ConfirmDialog", "CancelPreviewButton", "gridLengthSpinBox", "gridHeightSpinBox", "gridScaleSpinBox", "generateGridButton", "resetButton", "confirmButton", "tileButtonContainer", "GeneratorContainer", "TilePickerContainer")]
+[node name="HexBuilderUi" type="Control" unique_id=476009712 node_paths=PackedStringArray("InitializeButton", "ReadyContainer", "ConfirmDialog", "CancelPreviewButton", "gridLengthSpinBox", "gridHeightSpinBox", "gridScaleSpinBox", "generateGridButton", "tileFolderLineEdit", "tileFolderBrowseButton", "resetButton", "confirmButton", "tileButtonContainer", "GeneratorContainer", "TilePickerContainer")]
 layout_mode = 3
 anchors_preset = 10
 anchor_right = 1.0
@@ -17,6 +17,8 @@ gridLengthSpinBox = NodePath("GeneratorVBox/VBoxContainer/HBoxContainer3/HBoxCon
 gridHeightSpinBox = NodePath("GeneratorVBox/VBoxContainer/HBoxContainer3/HBoxContainer/SpinBox2")
 gridScaleSpinBox = NodePath("GeneratorVBox/VBoxContainer/HBoxContainer3/SpinBox3")
 generateGridButton = NodePath("GeneratorVBox/VBoxContainer/HBoxContainer2/GenerateMapButton")
+tileFolderLineEdit = NodePath("PainterVBox/HBoxContainer2/LineEdit")
+tileFolderBrowseButton = NodePath("PainterVBox/HBoxContainer2/Button")
 resetButton = NodePath("PainterVBox/HBoxContainer/ResetMap")
 confirmButton = NodePath("PainterVBox/HBoxContainer/Confirm")
 tileButtonContainer = NodePath("PainterVBox/MarginContainer/ScrollContainer/VBoxContainer")
@@ -56,6 +58,7 @@ dialog_text = "Warning, initializing the hex builder tool will remove everything
 Proceed?"
 
 [node name="GeneratorVBox" type="VBoxContainer" parent="." unique_id=1672856038]
+visible = false
 layout_mode = 1
 anchors_preset = 10
 anchor_right = 1.0
@@ -146,12 +149,31 @@ grow_horizontal = 2
 theme_override_constants/separation = 25
 alignment = 1
 
+[node name="Label2" type="Label" parent="PainterVBox" unique_id=1925829723]
+layout_mode = 2
+text = "Add a custom path to use custom tiles"
+
+[node name="HBoxContainer2" type="HBoxContainer" parent="PainterVBox" unique_id=1030863745]
+layout_mode = 2
+alignment = 1
+
+[node name="LineEdit" type="LineEdit" parent="PainterVBox/HBoxContainer2" unique_id=1099960414]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "res://addons/hex_builder/tiles"
+virtual_keyboard_enabled = false
+
+[node name="Button" type="Button" parent="PainterVBox/HBoxContainer2" unique_id=287086779]
+layout_mode = 2
+text = "Load Path"
+
 [node name="Label" type="Label" parent="PainterVBox" unique_id=1019226476]
 layout_mode = 2
 text = "Select the tile to paint with:"
 
 [node name="MarginContainer" type="MarginContainer" parent="PainterVBox" unique_id=116865652]
 layout_mode = 2
+size_flags_vertical = 3
 theme_override_constants/margin_left = 50
 theme_override_constants/margin_top = 25
 theme_override_constants/margin_right = 50
@@ -165,24 +187,27 @@ horizontal_scroll_mode = 0
 [node name="VBoxContainer" type="VBoxContainer" parent="PainterVBox/MarginContainer/ScrollContainer" unique_id=983467410]
 layout_mode = 2
 theme_override_constants/separation = 10
+alignment = 1
 
 [node name="HBoxContainer" type="HBoxContainer" parent="PainterVBox" unique_id=1987925507]
 layout_mode = 2
 size_flags_vertical = 10
-theme_override_constants/separation = 50
+theme_override_constants/separation = 100
 alignment = 1
-
-[node name="ResetMap" type="Button" parent="PainterVBox/HBoxContainer" unique_id=1579223249]
-custom_maximum_size = Vector2(-1, 50)
-layout_mode = 2
-size_flags_horizontal = 4
-text = "Reset button"
 
 [node name="Confirm" type="Button" parent="PainterVBox/HBoxContainer" unique_id=1583308515]
 custom_maximum_size = Vector2(-1, 50)
 layout_mode = 2
 size_flags_horizontal = 4
-text = "Confirm
+tooltip_text = "The painted map gets saved and the tool deactivated"
+text = "Confirm Map
 "
 alignment = 2
 autowrap_trim_flags = 0
+
+[node name="ResetMap" type="Button" parent="PainterVBox/HBoxContainer" unique_id=1579223249]
+custom_maximum_size = Vector2(-1, 50)
+layout_mode = 2
+size_flags_horizontal = 4
+tooltip_text = "The painted map gets DELETED and the tool deactivated"
+text = "Cancel"

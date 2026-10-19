@@ -5,8 +5,6 @@ using System;
 public partial class TileItemUi : Button
 {
 
-	[Export]
-	public TextureRect IconTextureRect;
 
 	[Export]
 	public Label TileNameLabel;
@@ -22,7 +20,7 @@ public partial class TileItemUi : Button
 		FocusMode = FocusModeEnum.None; // Disable focus for the button to prevent unwanted focus behavior
 	}
 
-    public void Setup(string title, Texture2D icon, ButtonGroup group, bool isSelected)
+    public void Setup(string title, ButtonGroup group, bool isSelected)
     {
         
 
@@ -31,10 +29,7 @@ public partial class TileItemUi : Button
 			TileNameLabel.Text = title;
 		}
 
-        if (icon != null)
-        {
-            IconTextureRect.Texture = icon;
-        }
+       
 
         ButtonGroup = group;
 		ButtonPressed = isSelected; // Set the initial selection state of the button

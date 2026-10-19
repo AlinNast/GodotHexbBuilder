@@ -29,7 +29,7 @@ border_width_right = 2
 border_width_bottom = 2
 border_color = Color(0.32156864, 0.5803922, 0.8862745, 1)
 
-[node name="TileItemUi" type="Button" unique_id=597626149 node_paths=PackedStringArray("IconTextureRect", "TileNameLabel")]
+[node name="TileItemUi" type="Button" unique_id=597626149 node_paths=PackedStringArray("TileNameLabel")]
 custom_minimum_size = Vector2(150, 50)
 anchors_preset = 10
 anchor_right = 1.0
@@ -47,7 +47,6 @@ toggle_mode = true
 icon_alignment = 1
 expand_icon = true
 script = ExtResource("1_fdx2m")
-IconTextureRect = NodePath("MarginContainer/HBoxContainer/TextureRect")
 TileNameLabel = NodePath("MarginContainer/HBoxContainer/Label")
 
 [node name="MarginContainer" type="MarginContainer" parent="." unique_id=1175003202]
@@ -67,14 +66,6 @@ custom_minimum_size = Vector2(150, 50)
 layout_mode = 2
 theme_override_constants/separation = 10
 alignment = 1
-
-[node name="TextureRect" type="TextureRect" parent="MarginContainer/HBoxContainer" unique_id=29164870]
-custom_minimum_size = Vector2(50, 50)
-layout_mode = 2
-size_flags_horizontal = 0
-size_flags_vertical = 4
-expand_mode = 5
-stretch_mode = 5
 
 [node name="Label" type="Label" parent="MarginContainer/HBoxContainer" unique_id=210440915]
 layout_mode = 2
