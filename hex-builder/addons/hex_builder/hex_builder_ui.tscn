@@ -3,16 +3,20 @@
 [ext_resource type="Script" uid="uid://brhqxsybxdlob" path="res://addons/hex_builder/HexBuilderUi.cs" id="1_m4e8m"]
 [ext_resource type="PackedScene" uid="uid://bvgy3e2ysif1" path="res://addons/hex_builder/tile_item_ui.tscn" id="2_v5842"]
 
-[node name="HexBuilderUi" type="Control" unique_id=476009712 node_paths=PackedStringArray("testButton", "gridLengthSpinBox", "gridHeightSpinBox", "generateGridButton", "resetButton", "confirmButton", "tileButtonContainer", "GeneratorContainer", "TilePickerContainer")]
+[node name="HexBuilderUi" type="Control" unique_id=476009712 node_paths=PackedStringArray("InitializeButton", "ReadyContainer", "ConfirmDialog", "CancelPreviewButton", "gridLengthSpinBox", "gridHeightSpinBox", "gridScaleSpinBox", "generateGridButton", "resetButton", "confirmButton", "tileButtonContainer", "GeneratorContainer", "TilePickerContainer")]
 layout_mode = 3
 anchors_preset = 10
 anchor_right = 1.0
 grow_horizontal = 2
 script = ExtResource("1_m4e8m")
-testButton = NodePath("")
-gridLengthSpinBox = NodePath("GeneratorVBox/HBoxContainer/SpinBox")
-gridHeightSpinBox = NodePath("GeneratorVBox/HBoxContainer/SpinBox2")
-generateGridButton = NodePath("GeneratorVBox/GenerateMapButton")
+InitializeButton = NodePath("ReadyVbox/InitializeButton")
+ReadyContainer = NodePath("ReadyVbox")
+ConfirmDialog = NodePath("ConfirmationDialog")
+CancelPreviewButton = NodePath("GeneratorVBox/VBoxContainer/HBoxContainer2/CancelButton")
+gridLengthSpinBox = NodePath("GeneratorVBox/VBoxContainer/HBoxContainer3/HBoxContainer/SpinBox")
+gridHeightSpinBox = NodePath("GeneratorVBox/VBoxContainer/HBoxContainer3/HBoxContainer/SpinBox2")
+gridScaleSpinBox = NodePath("GeneratorVBox/VBoxContainer/HBoxContainer3/SpinBox3")
+generateGridButton = NodePath("GeneratorVBox/VBoxContainer/HBoxContainer2/GenerateMapButton")
 resetButton = NodePath("PainterVBox/HBoxContainer/ResetMap")
 confirmButton = NodePath("PainterVBox/HBoxContainer/Confirm")
 tileButtonContainer = NodePath("PainterVBox/MarginContainer/ScrollContainer/VBoxContainer")
@@ -20,8 +24,38 @@ GeneratorContainer = NodePath("GeneratorVBox")
 TilePickerContainer = NodePath("PainterVBox")
 paletteItemPrefab = ExtResource("2_v5842")
 
-[node name="GeneratorVBox" type="VBoxContainer" parent="." unique_id=1672856038]
+[node name="ReadyVbox" type="VBoxContainer" parent="." unique_id=401551889]
 visible = false
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_bottom = 117.0
+grow_horizontal = 2
+alignment = 1
+
+[node name="Label" type="Label" parent="ReadyVbox" unique_id=703724425]
+layout_mode = 2
+text = "Initialize map generation"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="InitializeButton" type="Button" parent="ReadyVbox" unique_id=1435646495]
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 8
+layout_direction = 2
+text = "Initialize"
+
+[node name="ConfirmationDialog" type="ConfirmationDialog" parent="." unique_id=1952030823]
+oversampling_override = 1.0
+title = "Hex Builder"
+initial_position = 1
+size = Vector2i(740, 158)
+dialog_text = "Warning, initializing the hex builder tool will remove everything from the scene tree! 
+
+Proceed?"
+
+[node name="GeneratorVBox" type="VBoxContainer" parent="." unique_id=1672856038]
 layout_mode = 1
 anchors_preset = 10
 anchor_right = 1.0
@@ -35,37 +69,73 @@ text = "Lenght and Height of the map:"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="HBoxContainer" type="HBoxContainer" parent="GeneratorVBox" unique_id=595876029]
+[node name="VBoxContainer" type="VBoxContainer" parent="GeneratorVBox" unique_id=2012205571]
+layout_mode = 2
+theme_override_constants/separation = 30
+
+[node name="HBoxContainer3" type="HBoxContainer" parent="GeneratorVBox/VBoxContainer" unique_id=175679287]
+layout_mode = 2
+theme_override_constants/separation = 50
+alignment = 1
+
+[node name="HBoxContainer" type="HBoxContainer" parent="GeneratorVBox/VBoxContainer/HBoxContainer3" unique_id=595876029]
 layout_mode = 2
 size_flags_stretch_ratio = 0.8
 alignment = 1
 
-[node name="SpinBox" type="SpinBox" parent="GeneratorVBox/HBoxContainer" unique_id=272495174]
+[node name="SpinBox" type="SpinBox" parent="GeneratorVBox/VBoxContainer/HBoxContainer3/HBoxContainer" unique_id=272495174]
 custom_minimum_size = Vector2(120, 0)
 layout_mode = 2
 offset_transform_enabled = true
 min_value = 1.0
 max_value = 60.0
-value = 6.0
+value = 5.0
 rounded = true
 prefix = "Lenght"
 
-[node name="SpinBox2" type="SpinBox" parent="GeneratorVBox/HBoxContainer" unique_id=395342612]
+[node name="SpinBox2" type="SpinBox" parent="GeneratorVBox/VBoxContainer/HBoxContainer3/HBoxContainer" unique_id=395342612]
 custom_minimum_size = Vector2(120, 0)
 layout_mode = 2
 offset_transform_position_ratio = Vector2(1.23, 0)
 min_value = 1.0
 max_value = 60.0
-value = 6.0
+value = 5.0
 rounded = true
 prefix = "Heigth"
 
-[node name="GenerateMapButton" type="Button" parent="GeneratorVBox" unique_id=531911255]
+[node name="SpinBox3" type="SpinBox" parent="GeneratorVBox/VBoxContainer/HBoxContainer3" unique_id=1438607896]
+custom_minimum_size = Vector2(120, 0)
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+offset_transform_position_ratio = Vector2(1.23, 0)
+tooltip_text = "Sets the scale of the generated tiles"
+min_value = 0.1
+value = 1.1
+rounded = true
+allow_greater = true
+prefix = "Scale"
+
+[node name="HBoxContainer2" type="HBoxContainer" parent="GeneratorVBox/VBoxContainer" unique_id=1032997649]
+layout_mode = 2
+size_flags_stretch_ratio = 0.8
+theme_override_constants/separation = 70
+alignment = 1
+
+[node name="GenerateMapButton" type="Button" parent="GeneratorVBox/VBoxContainer/HBoxContainer2" unique_id=531911255]
 layout_mode = 2
 size_flags_horizontal = 4
 size_flags_vertical = 8
 layout_direction = 2
-text = "Generate Map"
+text = "Confirm Map"
+
+[node name="CancelButton" type="Button" parent="GeneratorVBox/VBoxContainer/HBoxContainer2" unique_id=2063954715]
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 8
+layout_direction = 2
+theme_override_constants/h_separation = 15
+text = "Cancel"
 
 [node name="PainterVBox" type="VBoxContainer" parent="." unique_id=1226973275]
 layout_mode = 1

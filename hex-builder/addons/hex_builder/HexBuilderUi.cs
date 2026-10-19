@@ -8,15 +8,30 @@ public partial class HexBuilderUi : Control
 	// reference to the tool
 	public HexBuilder hexBuilder;
 
-	// UI needs to be Manually referenced
+	///////// READY STATE
 	[Export]
-	Button testButton;
+	Button InitializeButton;
+	[Export]
+	VBoxContainer ReadyContainer;
+	[Export]
+	ConfirmationDialog ConfirmDialog;
+
+
+	////////// FEEDFORWARD STATE
+	[Export]
+	Button CancelPreviewButton;
 	[Export]
 	SpinBox gridLengthSpinBox;
 	[Export]
 	SpinBox gridHeightSpinBox;
 	[Export]
+	SpinBox gridScaleSpinBox;
+	[Export]
 	Button generateGridButton;
+
+	// UI needs to be Manually referenced
+	[Export]
+	Button testButton;
 	[Export]
 	Button resetButton;
 	[Export]
@@ -39,28 +54,45 @@ public partial class HexBuilderUi : Control
 
 	////////////////       Tool UI Life Cycle
 	public override void _EnterTree(){
-		GeneratorContainer.Visible = true; // Show the generator container when the tool becomes active
+		ReadyContainer.Visible = true; // Show the ready container when the tool becomes active
+		GeneratorContainer.Visible = false; // Show the generator container when the tool becomes active
 		TilePickerContainer.Visible = false; // Hide the tile picker container when the tool becomes active
 		
 		resetButton.Pressed += StopTool; // add event to Pressed test button
 		generateGridButton.Pressed += GenerateGrid; // add event to Pressed generate grid button
 		confirmButton.Pressed += confirmButtonPressed; // add event to Pressed confirm button
+		InitializeButton.Pressed += InitPopUp; // add event to Pressed initialize button
+		CancelPreviewButton.Pressed += StopTool; // add event to Pressed cancel preview button
+
+		if (ConfirmDialog != null)
+		{
+			ConfirmDialog.Confirmed += InitConfirmed; 
+		}
+
+		gridLengthSpinBox.ValueChanged += OnGridSizeChanged;
+		gridHeightSpinBox.ValueChanged += OnGridSizeChanged;
+		gridScaleSpinBox.ValueChanged += OnGridSizeChanged;
+	}
+
+	public override void _ExitTree(){
+		resetButton.Pressed -= StopTool; // remove event to Pressed test button
+		generateGridButton.Pressed -= GenerateGrid; // remove event to Pressed generate grid button
+		confirmButton.Pressed -= confirmButtonPressed; // remove event to Pressed confirm button
+		InitializeButton.Pressed -= InitPopUp; // remove event to Pressed initialize button
+		CancelPreviewButton.Pressed -= StopTool; // remove event to Pressed cancel preview button
+
+		if (ConfirmDialog != null)
+		{
+			ConfirmDialog.Confirmed -= InitConfirmed; 
+		}
+
+		gridLengthSpinBox.ValueChanged -= OnGridSizeChanged;
+		gridHeightSpinBox.ValueChanged -= OnGridSizeChanged;
+		gridScaleSpinBox.ValueChanged -= OnGridSizeChanged;
 	}
 
 	public void Init(){
 		hexBuilder.Init();  // Initializes the functionality of the tool
-	}
-
-	public void GenerateGrid(){
-		int length = (int)gridLengthSpinBox.Value;
-		int height = (int)gridHeightSpinBox.Value;
-		hexBuilder.SetGridSize(length, height);
-
-		PopulateTilePickerUI(); // Populate the tile picker UI with available hex tile scenes
-		hexBuilder.Init();  // Initializes the functionality of the tool
-
-		GeneratorContainer.Visible = false; // hide the generator container after generating the grid
-		TilePickerContainer.Visible = true; // Show the tile picker container after generating the grid
 	}
 
 	public void StopTool(){
@@ -73,8 +105,58 @@ public partial class HexBuilderUi : Control
 		hexBuilder.StopTool();  // Stops the functionality of the tool
 		
 		TilePickerContainer.Visible = false;
-		GeneratorContainer.Visible = true;
+		GeneratorContainer.Visible = false;
+		ReadyContainer.Visible = true; 
 	}
+
+
+	/////////// Ready State UI Functions
+	/// 
+	public void InitPopUp()
+	{
+		if (ConfirmDialog != null)
+		{
+
+			ConfirmDialog.PopupCentered();
+		}
+		else
+		{
+			GD.PrintErr("ConfirmDialog is not assigned in the inspector.");
+		}
+	}
+
+	public void InitConfirmed()
+	{
+		ReadyContainer.Visible = false; // Hide the ready container after confirming initialization
+		GeneratorContainer.Visible = true; // Show the generator container after confirming initialization
+		Init(); // Call the Init function to initialize the tool
+	}
+
+
+    ////////////// Feedforward State UI Functions
+	
+	private void OnGridSizeChanged(double value)
+	{
+		int length = (int)gridLengthSpinBox.Value;
+		int height = (int)gridHeightSpinBox.Value;
+		float scale = (float)gridScaleSpinBox.Value;
+		hexBuilder.RebuildGrid(length, height, scale); // Update the grid preview whenever the grid size changes
+	}
+
+
+	public void GenerateGrid(){
+		int length = (int)gridLengthSpinBox.Value;
+		int height = (int)gridHeightSpinBox.Value;
+		float scale = (float)gridScaleSpinBox.Value;
+		hexBuilder.RebuildGrid(length, height, scale);
+
+		PopulateTilePickerUI(); // Populate the tile picker UI with available hex tile scenes
+
+		GeneratorContainer.Visible = false; // hide the generator container after generating the grid
+		TilePickerContainer.Visible = true; // Show the tile picker container after generating the grid
+		hexBuilder.isPainitngEnabled = true; // Enable painting mode
+	}
+
 
 	public void PopulateTilePickerUI()
 	{

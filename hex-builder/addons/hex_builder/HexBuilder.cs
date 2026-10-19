@@ -6,34 +6,36 @@ using System.Text.RegularExpressions;
 [Tool]
 public partial class HexBuilder : EditorPlugin
 {
-	// [ExportToolButton("Hex Tool")]
-	// public Callable InitToolButton => Callable.From(Init);
+	
+
+	/////////////////////////////  Tool State Variables  //////////////////////////////////////
+	/// <summary>
+	/// Toggles to the inspector 
+	/// </summary>
+	public bool toolActive = true;
 
 	/// <summary>
-	/// Toggles to the inspector allowing to paint hexes in the scene view. 
+	/// Ensures that Process doesent run before initialization
 	/// </summary>
-	[Export]
-	public bool toolActive = true;
+	public bool init = false;
+
+	/// <summary>
+	/// Toggles the painting mode on and off. When true, clicking on a hex tile in the viewport will replace it with the selected tile scene.
+	/// </summary>
+	public bool isPainitngEnabled = false; 
+
+
+
 
 	[Export]
 	public PackedScene tileScene; // Packed scene of the hex tile to paint with
 
 	public int gridLength = 5;
 	public int gridHeight = 5;
-	// TODO make this customazible
+	public float hex_size = 1.0f; // Size of the hexagon tiles
 
-	/// <summary>
-	/// Ensures that Process doesent run before initialization
-	/// </summary>
-	public bool init = false;
 	
 	/// ////// Private variables for the tool's internal state
-	
-	/// <summary>
-	/// The unit of one hex
-	/// </summary>
-	int hex_size = 1; // Size of the hexagon tiles
-	
 
     /// <summary>
 	/// Stores the Hexes as value and they are accessible by their grid position as key. 
@@ -116,16 +118,93 @@ public partial class HexBuilder : EditorPlugin
 		GD.Print("Hex tool Plugin initialized");
 		SetCurrentScene();
 
-		// To be replaced with a dynamic loading of the hex tile scenes from the specified folder path
-		tileScene = GD.Load<PackedScene>("res://tiles/demo/hex_tile_base.tscn");
-		//DirContents(tileFolderPath);
+		// Clear everything in the current scene to start fresh
+		ClearScene();
 
+		// load the default tile
+		tileScene = GD.Load<PackedScene>("res://tiles/demo/hex_tile_base.tscn");
+
+		/// Preview Grid is loaded in the scene
 		ConstructGrid();
+
+		///Align the camera with the top view to enable good visialisation
+		AlignEditorCameraToTopView();
 		
 		init = true;
 		toolActive = true;
 	}
 
+
+//////////////////////////////// Ready State /////////////////////
+/// 
+
+	private void ClearScene()
+		{
+			if (activeRoot != null)
+			{
+				foreach (Node child in activeRoot.GetChildren())
+				{
+					child.QueueFree();
+				}
+			}
+			else
+			{
+				GD.PrintErr("No active root node found. Cannot clear the scene.");
+			}
+		}
+
+
+	/// <summary>
+	/// Automatically shifts the editor's 3D viewport camera to a top-down orthogonal view focused on the grid.
+	/// </summary>
+	private void AlignEditorCameraToTopView()
+	{
+		Camera3D editorCamera = EditorInterface.Singleton.GetEditorViewport3D()?.GetCamera3D();
+		if (editorCamera != null)
+		{
+			// Calculate grid center in world coordinates
+			float unitWidth = Mathf.Sqrt(3.0f) * hex_size;
+			float rowStep = 1.5f * hex_size;
+			
+			float centerX = (gridLength * unitWidth) / 2.0f;
+			float centerZ = (gridHeight * rowStep) / 2.0f;
+
+			// Position camera straight above the center of the grid looking down
+			editorCamera.GlobalPosition = new Vector3(centerX, 25f, centerZ);
+			
+			// Rotate to point straight down (looking along the negative Y axis)
+			editorCamera.Rotation = new Vector3(-Mathf.Pi / 2.0f, 0, 0);
+
+			// Change projection to Orthogonal for precise grid painting
+			editorCamera.Projection = Camera3D.ProjectionType.Orthogonal;
+			
+			// Adjust orthographic size to fit the grid nicely in view
+			editorCamera.Size = Mathf.Max(gridLength, gridHeight) * unitWidth * 0.75f;
+		}
+		else
+		{
+			GD.PrintErr("Could not find active editor 3D camera to adjust view.");
+		}
+	}
+
+
+///////////////////////////Feed forward State///////////////////
+
+	/// <summary>
+	/// Rebuilds the grid live with current gridLength and gridHeight values.
+	/// </summary>
+	public void RebuildGrid(int newLength, int newHeight, float newScale = 1.0f)
+	{
+		//GD.Print($"Rebuilding grid to new size: Length={newLength}, Height={newHeight}");
+		if (!init) return;
+		
+		SetGridSize(newLength, newHeight, newScale);
+
+		// Clear existing grid and construct a new one with updated sizes
+		ClearGrid();
+		ConstructGrid();
+		AlignEditorCameraToTopView();
+	}
 
 /// ////////////////////////////////////  Input Handling Functions  //////////////////////////////////////
 
@@ -148,6 +227,7 @@ public partial class HexBuilder : EditorPlugin
 		// Handle mouse button events to set the state of the hex tile at the pointer position
 		if (@event is InputEventMouseButton mouse && mouse.Pressed && mouse.ButtonIndex == MouseButton.Left)
 		{
+			if (!isPainitngEnabled) return (int)EditorPlugin.AfterGuiInput.Pass; // If painting mode is not enabled, ignore left clicks
 
 			// Case where you left click the hex in the viewport
 			Vector3? hitWorldPos = GetWorldHitPosition(camera, mouse.Position);
@@ -236,10 +316,11 @@ public partial class HexBuilder : EditorPlugin
 	}
 
 	 /// ////////////////////////////////////  UI COM FUNCTIONS  //////////////////////////////////////
-	public void SetGridSize(int length, int height)
+	public void SetGridSize(int length, int height, float scale = 1.0f)
 	{
 		gridLength = length;
 		gridHeight = height;
+		hex_size = scale;
 	}
 
 	public void StopTool()
@@ -247,6 +328,8 @@ public partial class HexBuilder : EditorPlugin
 		ClearGrid();
 		toolActive = false;
 		init = false;
+		isPainitngEnabled = false;
+		GD.Print("Hex tool Plugin stopped");
 	}
 
 
