@@ -30,6 +30,8 @@ public partial class HexBuilder : EditorPlugin
 	[Export]
 	public PackedScene tileScene; // Packed scene of the hex tile to paint with
 
+	public PackedScene defaultTileScene;
+
 	public int gridLength = 5;
 	public int gridHeight = 5;
 	public float hex_size = 1.0f; // Size of the hexagon tiles
@@ -123,6 +125,7 @@ public partial class HexBuilder : EditorPlugin
 
 		// load the default tile
 		tileScene = GD.Load<PackedScene>("res://addons/hex_builder/tiles/hex_tile_base.tscn");
+		defaultTileScene = GD.Load<PackedScene>("res://addons/hex_builder/tiles/hex_tile_base.tscn");
 
 		/// Preview Grid is loaded in the scene
 		ConstructGrid();
@@ -224,24 +227,39 @@ public partial class HexBuilder : EditorPlugin
 			return (int)EditorPlugin.AfterGuiInput.Pass;
 		}
 
-		// Handle mouse button events to set the state of the hex tile at the pointer position
-		if (@event is InputEventMouseButton mouse && mouse.Pressed && mouse.ButtonIndex == MouseButton.Left)
+		// Handle mouse button events for painting
+		if (@event is InputEventMouseButton mouse && mouse.Pressed)
 		{
-			if (!isPainitngEnabled) return (int)EditorPlugin.AfterGuiInput.Pass; // If painting mode is not enabled, ignore left clicks
-
-			// Case where you left click the hex in the viewport
-			Vector3? hitWorldPos = GetWorldHitPosition(camera, mouse.Position);
-			if (hitWorldPos.HasValue)
+			if (mouse.ButtonIndex == MouseButton.Left || mouse.ButtonIndex == MouseButton.Right)
 			{
-				Vector3I gridCoord3D = WorldToGridCoord(hitWorldPos.Value);
-				Vector2I gridCoord = new Vector2I(gridCoord3D.X, gridCoord3D.Z);
+				// If painting mode is not enabled, ignore clicks
+				if (!isPainitngEnabled) 
+				{
+					return (int)EditorPlugin.AfterGuiInput.Pass; 
+				}
 
-				PaintTileAt(gridCoord, hitWorldPos.Value);
+				Vector3? hitWorldPos = GetWorldHitPosition(camera, mouse.Position);
+				if (hitWorldPos.HasValue)
+				{
+					Vector3I gridCoord3D = WorldToGridCoord(hitWorldPos.Value);
+					Vector2I gridCoord = new Vector2I(gridCoord3D.X, gridCoord3D.Z);
+
+					if (mouse.ButtonIndex == MouseButton.Left)
+					{
+						// Left-click: Paint with the currently selected tile from the UI palette
+						PaintTileAt(gridCoord, selectedPaintTileScene);
+					}
+					else if (mouse.ButtonIndex == MouseButton.Right)
+					{
+						// Right-click: Paint with the dedicated default tile
+						PaintTileAt(gridCoord, defaultTileScene);
+					}
+				}
+
+				return (int)EditorPlugin.AfterGuiInput.Pass;
 			}
-			
-
-			return (int)EditorPlugin.AfterGuiInput.Pass;
 		}
+
 		return (int)EditorPlugin.AfterGuiInput.Pass;
 	}
 
@@ -440,42 +458,40 @@ public partial class HexBuilder : EditorPlugin
 		activeRoot = EditorInterface.Singleton.GetEditedSceneRoot();
 	}
 
-	private void PaintTileAt(Vector2I gridCoord, Vector3 worldPos)
-	{
-		if (selectedPaintTileScene == null)
-		{
-			GD.PrintErr("No tile scene selected for painting.");
-			return;
-		}
+	private void PaintTileAt(Vector2I gridCoord, PackedScene tileSceneToPaint)
+{
+    if (tileSceneToPaint == null)
+    {
+        GD.PrintErr("No tile scene assigned or selected for painting.");
+        return;
+    }
 
+    // If a tile exists there, remove it first
+    Node3D existingTile = GetHexAt(gridCoord);
+    if (existingTile != null)
+    {
+        existingTile.QueueFree();
+        hexGrid.Remove(gridCoord);
+    }
 
-		// If a tile exists there, remove it first
-		Node3D existingTile = GetHexAt(gridCoord);
-		if (existingTile != null)
-		{
-			existingTile.QueueFree();
-			hexGrid.Remove(gridCoord);
-		}
+    // Create a new instance of the chosen tile scene
+    Node3D newTileInstance = tileSceneToPaint.Instantiate<Node3D>();
+    newTileInstance.Name = $"Hex_{gridCoord.X}_{gridCoord.Y}";
+    hexGrid[gridCoord] = newTileInstance;
 
-		// Create a new instance of the selected tile scene
-		Node3D newTileInstance = selectedPaintTileScene.Instantiate<Node3D>();
-		newTileInstance.Name = $"Hex_{gridCoord.X}_{gridCoord.Y}";
-		hexGrid[gridCoord] = newTileInstance; // Store the new tile in the dictionary
+    // Add the hex tile instance to the map container
+    mapContainer.AddChild(newTileInstance, forceReadableName: true);
 
-		// Add the hex tile instance to the map container
-				mapContainer.AddChild(newTileInstance, forceReadableName: true);
+    // Assign the scene root owner so it shows in the editor Scene Dock
+    if (activeRoot != null)
+    {
+        newTileInstance.Owner = activeRoot;
+    }
 
-				// Assign the scene root owner so it shows in the editor Scene Dock
-				if (activeRoot != null)
-				{
-					newTileInstance.Owner = activeRoot;
-				}
-
-
-		// Set the position of the new tile instance based on its grid coordinates
-		Vector3 tileWorldPos = GridCoordToWorld(gridCoord);
-		newTileInstance.GlobalPosition = tileWorldPos;
-	}
+    // Set the position of the new tile instance based on its grid coordinates
+    Vector3 tileWorldPos = GridCoordToWorld(gridCoord);
+    newTileInstance.GlobalPosition = tileWorldPos;
+}
 
 	private Vector3? GetWorldHitPosition(Camera3D camera, Vector2 screenPos)
 	{
